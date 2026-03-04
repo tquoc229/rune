@@ -3,7 +3,7 @@ name: design
 description: Design system reasoning. Maps product domain to style, palette, typography, and platform-specific patterns. Generates .rune/design-system.md as the shared design contract for all UI-generating skills.
 metadata:
   author: runedev
-  version: "0.1.0"
+  version: "0.2.0"
   layer: L2
   model: sonnet
   group: creation
@@ -42,6 +42,18 @@ Design system reasoning layer. Converts a product description into a concrete de
 ```
 
 ## Executable Steps
+
+### Step 0 — Load Design Reference
+
+Load the design knowledge base before reasoning:
+
+1. Check for user-level override: `~/.claude/docs/design-dna.md`
+   - If exists → `Read` it. This is the primary reference (user's curated taste).
+2. If no user override → `Read` the baseline: `skills/design/DESIGN-REFERENCE.md` (shipped with Rune)
+3. The loaded reference provides: font pairings, chart selection, component architecture, color principles, UX checklist, interaction patterns, anti-pattern signatures
+4. Apply reference knowledge throughout Steps 3-5 (domain reasoning, token generation, checklist)
+
+> **Why two layers**: The baseline ships "good enough" universal design knowledge. Users who care about aesthetics create their own `design-dna.md` with curated palettes, font pairings, and style preferences. The design skill works well with either — it just works _better_ with a curated reference.
 
 ### Step 1 — Discover
 
@@ -394,6 +406,7 @@ Known failure modes for this skill. Check these before declaring done.
 
 ## Done When
 
+- Design reference loaded (user override or baseline)
 - Domain classified (one of the 10 categories or explicit custom reasoning)
 - Design system generated with: colors (primitive + semantic), typography, spacing, effects, anti-patterns
 - Platform-specific overrides applied (if iOS/Android target)
