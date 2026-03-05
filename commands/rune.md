@@ -30,6 +30,7 @@ Route to the appropriate Rune skill based on the action:
 - `/rune sentinel` — Invoke the rune:sentinel skill for security scanning
 - `/rune preflight` — Invoke the rune:preflight skill for pre-commit quality gate
 - `/rune onboard` — Invoke the rune:onboard skill to generate project context
+- `/rune logic-guardian` — Invoke the rune:logic-guardian skill to protect business logic from accidental deletion
 
 ### Workflow (L2) — Delivery
 - `/rune deploy` — Invoke the rune:deploy skill for deployment management
@@ -117,6 +118,7 @@ L4 packs provide domain-specific patterns. When invoked, read the pack's PACK.md
 - `/rune realtime-data` — WebSocket market data, order book management
 - `/rune chart-components` — Trading chart integration (TradingView, Lightweight Charts)
 - `/rune indicator-library` — Technical indicators (SMA, EMA, RSI, MACD)
+- `/rune trade-logic` — Trading logic preservation, strategy specs, backtest linkage
 
 #### SaaS (`extensions/saas/PACK.md`)
 - `/rune multi-tenant` — Multi-tenancy architecture patterns

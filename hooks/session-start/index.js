@@ -19,7 +19,8 @@ if (fs.existsSync(runeDir)) {
     'decisions.md',
     'conventions.md',
     'RESCUE-STATE.md',
-    'DEVELOPER-GUIDE.md'
+    'DEVELOPER-GUIDE.md',
+    'logic-manifest.json'
   ];
   const loaded = [];
 

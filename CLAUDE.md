@@ -3,7 +3,7 @@
 ## Overview
 
 Rune is a Claude Code plugin providing an interconnected skill ecosystem.
-48 core skills | 5-layer mesh architecture (L0 Router → L1 Orchestrators → L2 Hubs → L3 Utilities → L4 Extensions).
+49 core skills | 5-layer mesh architecture (L0 Router → L1 Orchestrators → L2 Hubs → L3 Utilities → L4 Extensions).
 Philosophy: "Less skills. Deeper connections."
 
 ## Tech Stack
@@ -48,7 +48,7 @@ rune/
 
 ## Current Wave
 
-All 48 core skills built (Waves 0-5 + audit + perf/db/incident + design + skill-router + review-intake + skill-forge + completion-gate + worktree + sast + constraint-check).
+All 49 core skills built (Waves 0-5 + audit + perf/db/incident + design + skill-router + review-intake + skill-forge + completion-gate + worktree + sast + constraint-check + logic-guardian).
 
 ### L0 Router (1)
 skill-router — meta-enforcement layer, routes every action through the correct skill
@@ -56,10 +56,10 @@ skill-router — meta-enforcement layer, routes every action through the correct
 ### L1 Orchestrators (4)
 cook, team, launch, rescue
 
-### L2 Workflow Hubs (22)
+### L2 Workflow Hubs (23)
 plan, scout, brainstorm, design, skill-forge, debug, fix, test, review, db,
 sentinel, preflight, onboard, deploy, marketing, perf,
-autopsy, safeguard, surgeon, audit, incident, review-intake
+autopsy, safeguard, surgeon, audit, incident, review-intake, logic-guardian
 
 ### L3 Utilities (21)
 research, docs-seeker, trend-scout, problem-solver, sequential-thinking,

@@ -30,7 +30,7 @@ Rune is a **skill mesh** — not a skill collection, not a pipeline, not an AI a
 
 **Technical definition:**
 
-> **Rune = 48 skills × 160+ bidirectional connections × cross-session memory**
+> **Rune = 49 skills × 170+ bidirectional connections × cross-session memory**
 
 All three components are equally essential:
 - Remove connections → becomes a collection (The Bloat wins)
@@ -198,7 +198,7 @@ Rune operates on three time horizons. The roadmap is intentionally non-prescript
 - Skill testing framework: automated validation of mesh connections and output format contracts
 - `rune:onboard` generates project-specific L4 suggestions based on detected stack
 
-**Constraint:** Core mesh (L1-L3) is frozen at ≤48 skills. Growth happens in L4.
+**Constraint:** Core mesh (L1-L3) is frozen at ≤49 skills. Growth happens in L4.
 
 ### H3 — Intelligence ✅ COMPLETE
 
@@ -211,7 +211,7 @@ Rune operates on three time horizons. The roadmap is intentionally non-prescript
 
 **Implementation**: Zero new L1-L3 skills added. 1 new hook (`metrics-collector`), 3 modified hooks, 4 extended skills (`audit`, `cook`, `skill-router`, `onboard`), 2 new commands (`/rune metrics`, `/rune pack`).
 
-**Constraint:** Core mesh remains frozen at 48 skills. Growth happens in L4 and community packs.
+**Constraint:** Core mesh remains frozen at 49 skills. Growth happens in L4 and community packs.
 
 ---
 
@@ -220,7 +220,7 @@ Rune operates on three time horizons. The roadmap is intentionally non-prescript
 *Rune is successful when these are true. Not when the feature list is long.*
 
 ### Mesh Health
-- **Connection density** ≥ 3.0 connections/skill (currently: 3.3 at 160+ connections / 48 skills) — do not let this drop below 2.5
+- **Connection density** ≥ 3.0 connections/skill (currently: 3.5 at 170+ connections / 49 skills) — do not let this drop below 2.5
 - **Dead nodes** = 0 — every skill has ≥1 inbound and ≥1 outbound connection
 - **Max chain depth used** < 6 in practice (ceiling is 8) — if chains regularly hit 8, the mesh needs restructuring
 - **Bloat Index** = 0.00 — dead nodes / total skills

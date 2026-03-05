@@ -93,6 +93,7 @@ For users who know exactly what they want:
 | Performance issue | `rune:perf` | L2 |
 | Database change | `rune:db` | L2 |
 | Received code review / PR feedback | `rune:review-intake` | L2 |
+| Protect / audit / document business logic | `rune:logic-guardian` | L2 |
 | Create / edit a Rune skill | `rune:skill-forge` | L2 — requires opus |
 | Incident / outage | `rune:incident` | L2 |
 | UI/UX design | `rune:design` | L2 |

@@ -8,7 +8,7 @@ A lean, interconnected skill ecosystem for Claude Code that covers the full proj
 
 Most skill ecosystems are either **too many isolated skills** (540+ that don't talk to each other) or **rigid pipelines** (A → B → C, if B fails everything stops).
 
-Rune is a **mesh** — 48 skills with 160+ connections across a 5-layer architecture. Skills call each other bidirectionally, forming resilient workflows that adapt when things go wrong.
+Rune is a **mesh** — 49 skills with 170+ connections across a 5-layer architecture. Skills call each other bidirectionally, forming resilient workflows that adapt when things go wrong.
 
 ```
 Pipeline:  A → B → C → D         (B fails = stuck)
@@ -28,7 +28,7 @@ Rune is a **Claude Code plugin** — it extends Claude Code with structured work
 | **Quality Gates** | preflight + sentinel + review + completion-gate (parallel) | None built-in |
 | **Domain Knowledge** | 12 extension packs (trading, SaaS, mobile, etc.) | General-purpose |
 | **Cross-Session State** | .rune/ directory (decisions, conventions, progress) | Conversation only |
-| **Mesh Resilience** | 160+ skill connections, fail-loud-route-around | Linear execution |
+| **Mesh Resilience** | 170+ skill connections, fail-loud-route-around | Linear execution |
 | **Cost Optimization** | Auto model selection (haiku/sonnet/opus per task) | Single model |
 | | | |
 | **Sandbox & Permissions** | — | Claude Code handles this |
@@ -44,7 +44,7 @@ Rune is a **Claude Code plugin** — it extends Claude Code with structured work
 | CI quality gates | `verification` skill: lint + typecheck + tests + build (actual commands, not LLM review) |
 | Memory / state | `session-bridge` + `journal`: cross-session decisions, conventions, ADRs, module health |
 | Multi-model strategy | Every skill has assigned model: haiku (scan), sonnet (code), opus (architecture) |
-| Agent specialization | 48 specialized skills with dedicated roles (architect, coder, reviewer, scanner, researcher) — each runs as a Task agent via Claude Code |
+| Agent specialization | 49 specialized skills with dedicated roles (architect, coder, reviewer, scanner, researcher) — each runs as a Task agent via Claude Code |
 | Security scanning | `sentinel`: OWASP patterns, secret scanning, dependency audit. `sast`: static analysis |
 
 ## Install
@@ -106,14 +106,15 @@ claude plugin add rune
 ║  Full lifecycle workflows                             ║
 ║  cook │ team │ launch │ rescue                        ║
 ╠══════════════════════════════════════════════════════╣
-║  L2: WORKFLOW HUBS (22)                               ║
+║  L2: WORKFLOW HUBS (23)                               ║
 ║  Cross-hub mesh — the key differentiator              ║
 ║                                                        ║
 ║  Creation:    plan │ scout │ brainstorm │ design │     ║
 ║               skill-forge                              ║
 ║  Development: debug │ fix │ test │ review │ db         ║
 ║  Quality:     sentinel │ preflight │ onboard │         ║
-║               audit │ perf │ review-intake             ║
+║               audit │ perf │ review-intake │           ║
+║               logic-guardian                            ║
 ║  Delivery:    deploy │ marketing │ incident            ║
 ║  Rescue:      autopsy │ safeguard │ surgeon            ║
 ╠══════════════════════════════════════════════════════╣
@@ -251,10 +252,10 @@ Domain-specific skills that plug into the core mesh:
 ## Numbers
 
 ```
-Core Skills:       48 (L0: 1 │ L1: 4 │ L2: 22 │ L3: 21)
+Core Skills:       49 (L0: 1 │ L1: 4 │ L2: 23 │ L3: 21)
 Extension Packs:   12
-Mesh Connections:  160+
-Connections/Skill: 3.3 avg
+Mesh Connections:  170+
+Connections/Skill: 3.5 avg
 Pain Points Solved: 92% (18/20 real dev problems)
 ```
 

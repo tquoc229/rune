@@ -57,7 +57,7 @@ Cursor has evolved significantly. v2.5 introduced a plugin marketplace with skil
 
 **Verdict:** Cursor v2.5 closes much of the gap. Individual skills and some orchestration work (~55-65% of value). The mesh interconnections — where Rune's real differentiation lies — still don't port because Cursor's skill model is flat (marketplace discovery) rather than mesh (skills invoking skills).
 
-**Porting effort:** Medium. Rewrite plugin manifest + agent wrappers. The 48 SKILL.md instructions transfer directly. Hook logic needs adaptation to Cursor's hook API. Mesh routing would need a custom orchestrator skill.
+**Porting effort:** Medium. Rewrite plugin manifest + agent wrappers. The 49 SKILL.md instructions transfer directly. Hook logic needs adaptation to Cursor's hook API. Mesh routing would need a custom orchestrator skill.
 
 ### Windsurf (Antigravity, Wave 13+)
 
@@ -129,7 +129,7 @@ Cursor v2.5 has hooks, but the API surface and lifecycle events may differ.
 The `Skill` tool dynamically loads and executes SKILL.md files by name. This enables:
 - `skill-router` dispatching to the correct skill
 - `cook` invoking `scout`, `plan`, `test`, `fix` in sequence
-- Any skill calling any other skill (160+ connections)
+- Any skill calling any other skill (170+ connections)
 This is the core differentiator. Other IDEs have skills/rules, but they're flat — not interconnected. Rune's mesh needs skills that invoke other skills.
 
 ### 4. MCP Ecosystem
@@ -159,6 +159,6 @@ The IDE landscape is evolving fast. Cursor v2.5's plugin marketplace and Windsur
 
 If you're on Cursor or Windsurf, you can use Rune's SKILL.md files as high-quality rules/prompts. You'll get the individual skill instructions (which are genuinely valuable) but not the orchestration (cook calling scout calling plan calling brainstorm).
 
-The decision to build on Claude Code is architectural: Rune's 160+ mesh connections require a runtime where skills can programmatically invoke other skills. Today, Claude Code's `Skill` tool is the only mechanism that supports this. If Cursor or Windsurf add programmatic skill-to-skill invocation, porting becomes viable.
+The decision to build on Claude Code is architectural: Rune's 170+ mesh connections require a runtime where skills can programmatically invoke other skills. Today, Claude Code's `Skill` tool is the only mechanism that supports this. If Cursor or Windsurf add programmatic skill-to-skill invocation, porting becomes viable.
 
 The knowledge is always free — copy the SKILL.md files.

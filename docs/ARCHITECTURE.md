@@ -6,7 +6,7 @@
 |-------|------|-------|----------|----------|-------|
 | **L0** | **Router** | **1** | **L1-L3 (routing)** | **Every message** | **Stateless (rule-based)** |
 | L1 | Orchestrators | 4 | L2, L3 | L0, User | Stateful (workflow) |
-| L2 | Workflow Hubs | 22 | L2 (cross-hub), L3 | L1, L2 | Stateful (task) |
+| L2 | Workflow Hubs | 23 | L2 (cross-hub), L3 | L1, L2 | Stateful (task) |
 | L3 | Utilities | 21 | Nothing (pure)* | L1, L2 | Stateless |
 | L4 | Extension Packs | 12 | L3 | L2 (domain match) | Config-based |
 
@@ -104,7 +104,7 @@ Override: user preference   → manual in config
 |-------|--------|
 | CREATION | plan, scout, brainstorm, design, skill-forge |
 | DEVELOPMENT | debug, fix, test, review, db |
-| QUALITY | sentinel, preflight, onboard, audit, perf, review-intake |
+| QUALITY | sentinel, preflight, onboard, audit, perf, review-intake, logic-guardian |
 | DELIVERY | deploy, marketing, incident |
 | RESCUE | autopsy, safeguard, surgeon |
 
@@ -216,6 +216,18 @@ sast ← review             (security patterns detected in diff)
 constraint-check ← cook   (end-of-workflow discipline audit)
 constraint-check ← team   (verify stream agent compliance)
 constraint-check ← audit  (quality dimension assessment)
+
+# logic-guardian
+logic-guardian ← cook     (Phase 1.5: complex logic project detected)
+logic-guardian ← fix      (pre-edit gate on manifested files)
+logic-guardian ← surgeon  (pre-refactor on logic modules)
+logic-guardian ← team     (validate logic integrity across streams)
+logic-guardian ← review   (check if diff removes manifested logic)
+logic-guardian → scout    (scan project for logic files)
+logic-guardian → verification (run tests after logic edits)
+logic-guardian → hallucination-guard (verify references after edit)
+logic-guardian → journal  (record logic changes as ADRs)
+logic-guardian → session-bridge (save manifest for cross-session)
 ```
 
 ## Context Bus
