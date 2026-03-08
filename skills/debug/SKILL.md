@@ -73,6 +73,30 @@ Use tools to collect facts — do NOT guess yet.
 - Use `rune:browser-pilot` if the issue is UI-related (console errors, network failures, visual bugs)
 - Use `rune:scout` to trace imports and identify all modules touched by the affected code path
 
+#### Backward Tracing (for deep stack errors)
+
+When the error appears deep in execution (wrong directory, wrong path, wrong value):
+
+1. **Observe symptom** — what's the exact error and where does it appear?
+2. **Find immediate cause** — what code directly triggers this? Read that file:line
+3. **What called this?** — trace one level up. What value was passed? By whom?
+4. **Keep tracing up** — repeat until you find where the bad value ORIGINATES
+5. **Fix at source** — the root cause is where invalid data is CREATED, not where it CRASHES
+
+Rule: NEVER fix where the error appears. Trace back to where invalid data originated.
+
+#### Multi-Component Instrumentation (for systems with 3+ layers)
+
+When the system has multiple components (CI → build → deploy, API → service → DB):
+
+Before hypothesizing, add diagnostic logging at EACH component boundary:
+- Log what data ENTERS each component
+- Log what data EXITS each component
+- Verify environment/config propagation across boundaries
+- Run once → analyze logs → identify WHICH boundary fails → THEN hypothesize
+
+This reveals: "secrets reach workflow ✓, workflow reaches build ✗" — pinpoints the failing layer.
+
 ### Step 3: Form Hypotheses
 
 List exactly 2-3 possible root causes — no more, no fewer.
@@ -126,6 +150,20 @@ Produce structured output and hand off to rune:fix.
 - Call `rune:fix` with the full report if fix is needed
 - Do NOT apply any code changes — report only
 
+## Red Flags — STOP and Return to Step 2
+
+If you catch yourself thinking any of these, you are GUESSING, not debugging:
+
+- "Quick fix for now, investigate later"
+- "Just try changing X and see if it works"
+- "It's probably X, let me fix that"
+- "I don't fully understand but this might work"
+- "Here are the main problems: [lists fixes without investigation]"
+- Proposing solutions before tracing data flow
+- "One more fix attempt" (when already tried 2+)
+
+ALL of these mean: STOP. Return to Step 2 (Gather Evidence).
+
 ## Constraints
 
 1. MUST NOT apply any code changes — debug investigates only, fix applies
@@ -135,6 +173,8 @@ Produce structured output and hand off to rune:fix.
 5. MUST mark each hypothesis CONFIRMED or RULED OUT with specific evidence
 6. MUST NOT exceed 3 hypothesis cycles — escalate to problem-solver or sequential-thinking
 7. MUST NOT say "I know what's wrong" without citing file:line evidence
+8. For deep stack errors: MUST use backward tracing (Step 2) — never fix at the crash site
+9. For multi-component systems: MUST instrument boundaries before hypothesizing
 
 ## Output Format
 

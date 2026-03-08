@@ -42,7 +42,7 @@ Parse the input to extract:
 - Version if specified
 - The specific API, method, or error to look up
 
-### Step 2 — Try Context7
+### Step 2 — Try Context7 MCP (fastest)
 
 Attempt Context7 MCP lookup first (faster, higher quality):
 
@@ -51,9 +51,35 @@ Attempt Context7 MCP lookup first (faster, higher quality):
 3. Call `mcp__plugin_context7_context7__query-docs` with the resolved library ID and the specific query
 4. If Context7 returns a satisfactory answer with code examples, proceed to Step 5
 
-### Step 3 — Fallback to Web
+### Step 3 — Try llms.txt Discovery
 
-If Context7 does not have the library or the answer is insufficient:
+If Context7 MCP is unavailable or insufficient, try llms.txt (AI-optimized documentation):
+
+**For GitHub repos** — pattern: `https://context7.com/{org}/{repo}/llms.txt`
+```
+github.com/vercel/next.js    → context7.com/vercel/next.js/llms.txt
+github.com/shadcn-ui/ui      → context7.com/shadcn-ui/ui/llms.txt
+```
+
+**For doc sites** — pattern: `https://context7.com/websites/{normalized-domain}/llms.txt`
+```
+docs.imgix.com               → context7.com/websites/imgix/llms.txt
+ffmpeg.org/doxygen/8.0        → context7.com/websites/ffmpeg_doxygen_8_0/llms.txt
+```
+
+**Topic-specific** — append `?topic={query}` for focused results:
+```
+context7.com/shadcn-ui/ui/llms.txt?topic=date-picker
+context7.com/vercel/next.js/llms.txt?topic=cache
+```
+
+**Traditional llms.txt fallback**: `WebSearch "[library] llms.txt"` → common paths: `docs.[lib].com/llms.txt`, `[lib].dev/llms.txt`
+
+Use `WebFetch` on the resolved llms.txt URL. If it contains multiple section URLs (3+), launch parallel Explorer agents (one per section, max 5).
+
+### Step 4 — Fallback to Web Search
+
+If neither Context7 nor llms.txt available:
 
 1. Use `WebSearch` with queries:
    - "[library] [api/method] official documentation"
@@ -62,24 +88,32 @@ If Context7 does not have the library or the answer is insufficient:
 2. Identify official documentation URLs (docs.*, official GitHub, npm/pypi pages)
 3. Call `WebFetch` on the top 1-3 official sources
 
-### Step 4 — Extract Answer
+**Repository analysis fallback** (when docs are sparse but code is available):
+```bash
+npx repomix --output /tmp/repomix-output.xml   # in the cloned repo
+```
+Read the repomix output to extract API patterns, usage examples, and internal documentation.
 
-From Context7 or fetched pages, extract:
+### Step 5 — Extract Answer
+
+From Context7, llms.txt, or fetched pages, extract:
 - Exact API signature with parameter types and return type
 - Minimal working code example
 - Version-specific notes (deprecated in X, changed in Y)
 - Known issues or common pitfalls mentioned in docs
 
-### Step 5 — Report
+### Step 6 — Report
 
 Return structured documentation in the output format below.
 
 ## Constraints
 
-- Prefer Context7 over WebSearch — it provides curated, version-aware docs
-- Only fall back to web if Context7 lacks coverage
+- Prefer Context7 MCP → llms.txt → WebSearch (in that priority order)
+- Only fall back to web if Context7 and llms.txt both lack coverage
+- Use `?topic=` parameter on llms.txt URLs for targeted results
 - Always include source URL so callers can verify
 - If the API is deprecated, say so explicitly and link to the replacement
+- For parallel fetching: 1-3 URLs = single agent, 4-10 = 3-5 Explorer agents, 11+ = 5-7 agents
 
 ## Output Format
 
@@ -112,7 +146,8 @@ Known failure modes for this skill. Check these before declaring done.
 |---|---|---|
 | Returning deprecated API without flagging it | HIGH | Must explicitly state "deprecated in X.Y, use Z instead" with replacement link |
 | Wrong version docs returned when version specified | HIGH | Verify version match — if version-specific docs unavailable, state that explicitly |
-| Skipping Context7 and going directly to web search | MEDIUM | Constraint: Context7 first always — web is fallback, not default |
+| Skipping Context7 and going directly to web search | MEDIUM | Constraint: Context7 MCP → llms.txt → WebSearch — follow the priority chain |
+| Not using ?topic= on llms.txt for focused queries | LOW | Topic parameter dramatically reduces noise — always append when query is specific |
 | Returning docs without source URL | MEDIUM | Constraint: always include source URL so callers can verify |
 
 ## Done When

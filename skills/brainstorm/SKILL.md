@@ -48,12 +48,34 @@ This applies to EVERY task regardless of perceived simplicity.
 
 ## Reasoning Frameworks
 
+### Analytical Frameworks
 ```
-SCAMPER     — Substitute, Combine, Adapt, Modify, Put to use, Eliminate, Reverse
+SCAMPER          — Substitute, Combine, Adapt, Modify, Put to use, Eliminate, Reverse
 FIRST PRINCIPLES — Break down to fundamentals, rebuild from ground up
 6 THINKING HATS  — Facts, Emotions, Caution, Benefits, Creativity, Process
-CRAZY 8s    — 8 ideas in 8 minutes (rapid ideation)
+CRAZY 8s         — 8 ideas in 8 minutes (rapid ideation)
 ```
+
+### Breakthrough Frameworks (when conventional thinking fails)
+
+**Collision-Zone Thinking** — Force unrelated concepts together: "What if we treated X like Y?"
+- Pick two unrelated domains (e.g., services + electrical circuits → circuit breakers)
+- Explore emergent properties from the collision
+- Test where the metaphor breaks → those boundaries reveal design constraints
+- Best source domains: physics, biology, economics, psychology
+- Use when: conventional approaches feel inadequate, need innovation not optimization
+
+**Inversion Exercise** — Flip every assumption: "What if the opposite were true?"
+- List core assumptions ("cache reduces latency", "handle errors when they occur")
+- Invert each: "add latency" → debouncing; "make errors impossible" → type systems
+- Valid inversions expose context-dependence in "obvious" truths
+- Use when: feeling forced into "the only way", stuck on unquestioned assumptions
+
+**Scale Game** — Test at extremes (1000x bigger/smaller) to expose fundamentals
+- Pick a dimension: volume, speed, users, duration, failure rate
+- Test minimum (1000x smaller) AND maximum (1000x bigger)
+- What breaks reveals algorithmic limits; what survives is fundamentally sound
+- Use when: unsure about production scale, edge cases unclear, "it works in dev"
 
 ## Executable Steps
 
@@ -82,6 +104,9 @@ Apply the most relevant framework to structure the evaluation:
 - Use **First Principles** when the problem looks unsolvable with conventional approaches
 - Use **6 Thinking Hats** when stakeholder perspectives matter (product vs. engineering vs. user)
 - Use **Crazy 8s** (rapid listing) when time-boxed exploration is needed
+- Use **Collision-Zone** when innovation is needed, not just optimization — force cross-domain metaphors
+- Use **Inversion** when all options feel forced or there's an unquestioned "must be this way"
+- Use **Scale Game** when validating which approach survives production reality
 
 For approaches with many interacting variables, invoke `rune:sequential-thinking` to reason through trade-offs systematically.
 

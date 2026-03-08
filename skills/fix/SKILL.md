@@ -95,7 +95,22 @@ Confirm the change works and nothing is broken.
 - If project has a type-check command, run it via `Bash`
 - If project has a lint command, run it via `Bash`
 
-### Step 5: Self-Review
+### Step 5: Post-Fix Hardening (Defense-in-Depth)
+
+After the fix works, make the bug **structurally impossible** — not just "fixed this time."
+
+Single validation at one point can be bypassed by different code paths, refactoring, or mocks. Add validation at EVERY layer data passes through:
+
+| Layer | Purpose | Example |
+|-------|---------|---------|
+| **Entry Point** | Reject invalid input at API boundary | Validate params not empty/exists/correct type |
+| **Business Logic** | Ensure data makes sense for this operation | Check preconditions specific to this function |
+| **Environment Guard** | Prevent dangerous ops in specific contexts | In tests: refuse writes outside tmpdir |
+| **Debug Instrumentation** | Capture context for forensics if bug recurs | Log stack trace + key values before risky ops |
+
+Apply this when: the bug was caused by invalid data flowing through multiple layers. Skip for trivial one-liner fixes.
+
+### Step 6: Self-Review
 
 Verify correctness of the changes just made.
 
@@ -103,7 +118,7 @@ Verify correctness of the changes just made.
 - Call `rune:docs-seeker` if any external API, library method, or SDK call was added or changed
 - For complex or risky fixes (auth, data mutation, async logic): call `rune:review` for a full quality check
 
-### Step 6: Report
+### Step 7: Report
 
 Produce a structured summary of all changes made.
 
@@ -158,6 +173,8 @@ Known failure modes for this skill. Check these before declaring done.
 | Exceeding 3 fix attempts without re-diagnosing | HIGH | Constraint 4: after 3 failures, call debug again — the hypothesis was wrong |
 | Introducing unrelated refactoring while fixing | MEDIUM | YAGNI: fix only what was diagnosed — unrelated changes belong in a separate task |
 | Not running tests after each individual change | MEDIUM | Constraint 3: never batch untested changes — run tests after each edit |
+| Fixing at crash site without tracing data origin | HIGH | Defense-in-depth: trace where bad data ORIGINATES, add validation at every layer it passes through |
+| Single-point validation (fix one spot, hope it holds) | MEDIUM | Step 5: add entry + business logic + environment + debug layers for data-flow bugs |
 
 ## Done When
 

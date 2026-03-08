@@ -49,6 +49,11 @@ Choose the framework based on what is unknown about the problem:
 | Standard assumptions need challenging | **First Principles** |
 | Creative options needed for a known problem | **SCAMPER** |
 | Must prioritize among known solutions | **Impact Matrix** |
+| Conventional approaches exhausted, need breakthrough | **Collision-Zone Thinking** |
+| Feeling forced into "the only way" | **Inversion Exercise** |
+| Same pattern appearing in 3+ places | **Meta-Pattern Recognition** |
+| Complexity spiraling, growing special cases | **Simplification Cascades** |
+| Unsure if approach survives production scale | **Scale Game** |
 
 State which framework was selected and why.
 
@@ -88,6 +93,40 @@ Execute the selected framework with discipline:
 - List all candidate solutions
 - Score each on Impact (1-5) and Effort (1-5)
 - Rank by Impact/Effort ratio descending
+
+**Collision-Zone Thinking:**
+- Pick two unrelated domains (e.g., services + electrical circuits)
+- Force combination: "What if we treated [A] like [B]?"
+- Explore emergent properties from the collision
+- Test where the metaphor breaks → boundaries reveal design constraints
+- Extract the transferable insight
+
+**Inversion Exercise:**
+- List core assumptions: what "must" be true?
+- Invert each systematically: "What if the opposite were true?"
+- Explore implications: what would we do differently?
+- Find valid inversions: which actually work? (e.g., "add latency" → debouncing)
+- Question every "there's only one way to do this"
+
+**Meta-Pattern Recognition:**
+- Spot the same shape appearing in 3+ different domains
+- Extract abstract form independent of any domain (e.g., "bound resource consumption" = rate limiting = circuit breakers = token budgets)
+- Identify variation points: what adapts per domain?
+- Apply to current problem: where else does this pattern help?
+
+**Simplification Cascades:**
+- List all variations: what's implemented multiple ways?
+- Find the essence: what's the same underneath?
+- Extract unifying abstraction: "Everything is a special case of..."
+- Test: do ALL cases fit cleanly?
+- Measure cascade: how many things can we DELETE? (10x wins, not 10% improvements)
+
+**Scale Game:**
+- Pick dimension: volume, speed, users, duration, failure rate
+- Test at 1000x smaller: what simplifies? What becomes unnecessary?
+- Test at 1000x bigger: what breaks? Where are algorithmic limits?
+- Note what survives both extremes → that's fundamentally sound
+- Use insights to validate architecture before building
 
 ### Step 4 — Generate Solutions
 
@@ -148,6 +187,9 @@ Known failure modes for this skill. Check these before declaring done.
 | Proceeding with underspecified problem without stating assumptions | HIGH | Step 1: restate problem in one sentence first — if ambiguous, state interpretation explicitly |
 | Producing more than 3 recommended solutions | MEDIUM | Constraint: max 3 ranked solutions — prioritize quality and actionability over quantity |
 | Framework mismatch (5 Whys for a creative problem) | MEDIUM | Use the selection table in Step 2 — match framework to "what is unknown" about the problem |
+| Collision-Zone with weak metaphors (surface-level similarity) | MEDIUM | Test where metaphor BREAKS — boundaries reveal more than similarities |
+| Inversion producing impractical results | LOW | Not all inversions work — test boundaries, find the context-dependent ones |
+| Simplification forcing premature abstraction | MEDIUM | Abstraction must fit ALL cases cleanly — if one case is forced, the abstraction is wrong |
 
 ## Done When
 
