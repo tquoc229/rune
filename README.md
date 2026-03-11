@@ -289,6 +289,18 @@ Domain-specific skills that plug into the core mesh:
 | @rune/content | blog, cms, mdx, i18n, seo | Content |
 | @rune/analytics | tracking, a/b testing, funnels, dashboards | Growth |
 
+### Rune Pro (Premium)
+
+Business department packs for product, sales, and data teams. Same PACK.md format, plugs into the core mesh.
+
+| Pack | Skills | For |
+|------|--------|-----|
+| @rune-pro/product | feature-spec, roadmap, metrics, release-comms, user-research, competitive | Product Management |
+| @rune-pro/sales | account-research, call-prep, outreach, pipeline-review, competitive-intel | Sales Enablement |
+| @rune-pro/data-science | data-exploration, sql-advanced, visualization, statistical-testing, dashboards | Data Science |
+
+Coming soon. See [docs/plans/RUNE-PRO-PLAN.md](docs/plans/RUNE-PRO-PLAN.md) for the full roadmap.
+
 ## Multi-Platform Compiler
 
 Rune includes a 3-stage compiler that transforms SKILL.md files into platform-native rule formats:
@@ -320,7 +332,7 @@ See [docs/MULTI-PLATFORM.md](docs/MULTI-PLATFORM.md) for the full architecture.
 
 ```
 Core Skills:       55 (L0: 1 │ L1: 5 │ L2: 26 │ L3: 23)
-Extension Packs:   12
+Extension Packs:   12 free + 3 pro (coming soon)
 Mesh Connections:  200+
 Connections/Skill: 3.6 avg
 Platforms:         5 (Claude Code, Cursor, Windsurf, Antigravity, Generic)

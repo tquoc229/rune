@@ -1,13 +1,13 @@
 # Rune Pro — Premium Extension Packs Plan
 
-Status: PLANNED | Created: 2025-03-10
+Status: IN PROGRESS | Created: 2025-03-10 | Updated: 2025-03-11
 
 ## Business Model
 
 ```
 rune-kit/rune (FREE, MIT)          rune-kit/rune-pro (PAID, separate repo)
 ┌──────────────────────────┐       ┌─────────────────────────────┐
-│ 49 dev skills            │       │ 9 business department packs │
+│ 55 dev skills            │       │ 9 business department packs │
 │ 12 free L4 packs         │       │ ~54 sub-skills              │
 │ Full mesh + compiler     │  ───► │ ~45 workflows               │
 │ Community + MIT license  │  kết  │ Connector templates (MCP)   │
@@ -207,7 +207,7 @@ Pro packs that interact with external tools need MCP server connectors:
 | Phase | What | When |
 |-------|------|------|
 | Phase 0 | Free Rune enhancements (design, marketing, plan, analytics) | Done |
-| Phase 1a | @rune-pro/product pack | Next session |
+| Phase 1a | @rune-pro/product pack | ✅ Done (PACK.md created) |
 | Phase 1b | @rune-pro/sales pack | After product validated |
 | Phase 1c | @rune-pro/data-science pack | After sales validated |
 | Phase 2 | support, finance, legal, hr, operations | After Phase 1 revenue |

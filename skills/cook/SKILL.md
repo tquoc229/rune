@@ -5,7 +5,7 @@ context: fork
 agent: general-purpose
 metadata:
   author: runedev
-  version: "0.4.0"
+  version: "0.5.0"
   layer: L1
   model: sonnet
   group: orchestrator
@@ -53,6 +53,7 @@ New feature:         Phase 1 → 1.5 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 Complex feature:     All phases + brainstorm in Phase 2
 Security-sensitive:  All phases + sentinel escalated to opus
 Fast mode:           Phase 1 → 4 → 6 → 7 (auto-detected, see below)
+Multi-session:       Phase 0 (resume) → 3 → 4 → 5 → 6 → 7 (one plan phase per session)
 ```
 
 Determine complexity BEFORE starting. Create TodoWrite with applicable phases.
@@ -137,6 +138,7 @@ After scout completes (Phase 1), check if the detected tech stack or task descri
 | `three`, `pixi`, `phaser`, `*.glsl`, game loop | `@rune/gamedev` | `extensions/gamedev/PACK.md` |
 | CMS, blog, MDX, `i18next`, SEO | `@rune/content` | `extensions/content/PACK.md` |
 | Analytics, tracking, A/B test, funnel | `@rune/analytics` | `extensions/analytics/PACK.md` |
+| PRD, roadmap, KPI, release notes, `.rune/business/` | `@rune-pro/product` | `extensions/pro-product/PACK.md` |
 
 2. If ≥1 pack matches:
    - Use `Read` to load the matching PACK.md
@@ -147,6 +149,22 @@ After scout completes (Phase 1), check if the detected tech stack or task descri
 3. If 0 packs match: skip silently, proceed to Phase 2
 
 This phase is lightweight — a Read + pattern match, not a full scan. It does NOT replace Phase 1 (scout) or Phase 2 (plan). It augments them with domain expertise.
+
+## Phase 0: RESUME CHECK (Before Phase 1)
+
+**Goal**: Detect if a master plan already exists for this task. If so, skip Phase 1-2 and resume from the current phase.
+
+1. Use `Glob` to check for `.rune/plan-*.md` files
+2. If a master plan exists that matches the current task:
+   - Read the master plan file
+   - Find the first phase with status `⬚ Pending` or `🔄 Active`
+   - Read ONLY that phase's file (e.g., `.rune/plan-<feature>-phase<N>.md`)
+   - Announce: "Resuming from Phase N: <name>. Loading phase file."
+   - Skip to Phase 4 (IMPLEMENT) with the phase file as context
+   - Mark the phase as `🔄 Active` in the master plan
+3. If no master plan exists → proceed to Phase 1 as normal
+
+**This enables multi-session workflows**: Opus plans once → each session picks up the next phase.
 
 ## Phase 2: PLAN
 
@@ -179,6 +197,30 @@ This phase is lightweight — a Read + pattern match, not a full scan. It does N
 
 **Gate**: User MUST approve the plan before proceeding. Do NOT skip this.
 
+### Phase-Aware Execution (Master Plan + Phase Files)
+
+When `rune:plan` produces a **master plan + phase files** (non-trivial tasks):
+
+1. **After plan approval**: Read the master plan to identify Phase 1
+2. **Load ONLY Phase 1's file** — do NOT load all phase files into context
+3. **Execute Phase 1** through cook Phase 3-6 (test → implement → quality → verify)
+4. **After Phase 1 complete**:
+   - Mark tasks done in the phase file
+   - Update master plan: Phase 1 status `⬚ → ✅`
+   - Announce: "Phase 1 complete. Phase 2 ready for next session."
+5. **Next session**: Phase 0 (RESUME CHECK) detects the master plan → loads Phase 2 → executes
+6. **Repeat** until all phases are ✅
+
+<HARD-GATE>
+NEVER load multiple phase files at once. One phase per session = small context = better code.
+If the coder model needs info from other phases, it's in the Cross-Phase Context section of the current phase file.
+</HARD-GATE>
+
+**Why one phase per session?**
+- Big context = even Opus misses details and makes mistakes
+- Small context = Sonnet handles correctly, Opus has zero mistakes
+- Phase files are self-contained via Amateur-Proof Template — no other context needed
+
 ## Phase 3: TEST (TDD Red)
 
 **Goal**: Define expected behavior with failing tests BEFORE writing implementation.
@@ -208,7 +250,14 @@ This phase is lightweight — a Read + pattern match, not a full scan. It does N
 **REQUIRED SUB-SKILL**: Use `rune:fix`
 
 1. Mark Phase 4 as `in_progress`
-2. Implement the feature following the plan:
+2. **Phase-file execution** — if working from a master plan + phase file:
+   - Execute tasks listed in the phase file (the `## Tasks` section)
+   - Follow code contracts from `## Code Contracts` section
+   - Respect rejection criteria from `## Rejection Criteria` section
+   - Handle failure scenarios from `## Failure Scenarios` section
+   - Use `## Cross-Phase Context` for imports/exports from other phases
+   - Mark each task `[x]` in the phase file as completed
+3. Implement the feature following the plan:
    - Use `Write` for new files
    - Use `Edit` for modifying existing files
    - Follow project conventions found in Phase 1
@@ -357,7 +406,11 @@ This is OPT-IN — only activate if:
    - Detects breaking changes
    - Formats as conventional commit: `<type>(<scope>): <description>`
    - Fallback: if git skill unavailable, use format `<type>: <description>` manually
-4. Mark Phase 7 as `completed`
+4. **Master plan update** — if working from a master plan + phase files:
+   - Update the master plan file: current phase status `🔄 → ✅`
+   - If next phase exists: announce "Phase N complete. Phase N+1 ready for next session."
+   - If all phases ✅: announce "All phases complete. Feature done."
+5. Mark Phase 7 as `completed`
 
 ## Phase 8: BRIDGE
 
@@ -483,8 +536,10 @@ If any exit condition triggers without resolution → cook emits `BLOCKED` statu
 
 | Gate | Requires | If Missing |
 |------|----------|------------|
+| Resume Gate | Phase 0 checks for existing master plan before starting | Proceed to Phase 1 if no plan exists |
 | Scout Gate | scout output (files examined, patterns found) before Phase 2 | Invoke rune:scout first |
 | Plan Gate | User-approved plan with file paths before Phase 3 | Cannot proceed to TEST |
+| Phase File Gate | Current phase file loaded (not full plan) for multi-session | Load only the active phase file |
 | Test-First Gate | Failing tests exist before Phase 4 IMPLEMENT | Write tests first or get explicit skip from user |
 | Quality Gate | preflight + sentinel + review passed before Phase 7 COMMIT | Fix findings, re-run |
 | Verification Gate | lint + types + tests + build all green before commit | Fix failures, re-run |
@@ -524,6 +579,8 @@ Known failure modes for this skill. Check these before declaring done.
 | Running Phase 5 checks sequentially instead of parallel | MEDIUM | Launch preflight+sentinel+review as parallel Task agents for speed |
 | Saying "done" without evidence trail | CRITICAL | completion-gate validates claims — UNCONFIRMED = BLOCK |
 | Fast mode on security-relevant code | HIGH | Fast mode auto-excludes auth/crypto/payments — never fast-track security code |
+| Loading all phase files at once into context | HIGH | Phase File Gate: load ONLY the active phase file — one phase per session |
+| Resuming without checking master plan | MEDIUM | Phase 0 (RESUME CHECK) runs before Phase 1 — detects existing plans |
 
 ## Done When
 

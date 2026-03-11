@@ -89,6 +89,11 @@ dependency-doctor, git, doc-processor
 
 All layers complete. Repository: https://github.com/rune-kit/rune
 
+### Rune Pro (Premium Extensions)
+@rune-pro/product (Phase 1a ✅), @rune-pro/sales (planned), @rune-pro/data-science (planned)
+Pro packs use same PACK.md format, install into `extensions/pro-*/`.
+See `docs/plans/RUNE-PRO-PLAN.md` for full plan.
+
 ## Full Spec
 
 See `~/.claude/rune/RUNE-COMPLETE.md` for the complete product specification.

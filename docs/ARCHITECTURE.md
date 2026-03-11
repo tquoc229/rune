@@ -5,10 +5,10 @@
 | Layer | Name | Count | Can Call | Called By | State |
 |-------|------|-------|----------|----------|-------|
 | **L0** | **Router** | **1** | **L1-L3 (routing)** | **Every message** | **Stateless (rule-based)** |
-| L1 | Orchestrators | 4 | L2, L3 | L0, User | Stateful (workflow) |
-| L2 | Workflow Hubs | 23 | L2 (cross-hub), L3 | L1, L2 | Stateful (task) |
-| L3 | Utilities | 21 | Nothing (pure)* | L1, L2 | Stateless |
-| L4 | Extension Packs | 12 | L3 | L2 (domain match) | Config-based |
+| L1 | Orchestrators | 5 | L2, L3 | L0, User | Stateful (workflow) |
+| L2 | Workflow Hubs | 26 | L2 (cross-hub), L3 | L1, L2 | Stateful (task) |
+| L3 | Utilities | 23 | Nothing (pure)* | L1, L2 | Stateless |
+| L4 | Extension Packs | 12 free + 1 pro | L3 | L2 (domain match) | Config-based |
 
 ### L0 — The Enforcement Layer
 
@@ -93,19 +93,20 @@ Override: user preference   → manual in config
 
 | Skill | Model | Role |
 |-------|-------|------|
-| cook | sonnet | Feature implementation orchestrator |
+| cook | sonnet | Feature implementation orchestrator (v0.5.0 — phase-aware execution) |
 | team | opus | Multi-agent parallel orchestrator |
 | launch | sonnet | Deploy + marketing orchestrator |
 | rescue | sonnet | Legacy refactoring orchestrator |
+| scaffold | sonnet | Project bootstrap orchestrator (BA-powered, 9-phase pipeline) |
 
 ### L2 Workflow Hubs
 
 | Group | Skills |
 |-------|--------|
-| CREATION | plan, scout, brainstorm, design, skill-forge |
+| CREATION | plan, scout, brainstorm, design, skill-forge, ba, mcp-builder |
 | DEVELOPMENT | debug, fix, test, review, db |
 | QUALITY | sentinel, preflight, onboard, audit, perf, review-intake, logic-guardian |
-| DELIVERY | deploy, marketing, incident |
+| DELIVERY | deploy, marketing, incident, docs |
 | RESCUE | autopsy, safeguard, surgeon |
 
 ### L3 Utilities
@@ -120,6 +121,8 @@ Override: user preference   → manual in config
 | MEDIA | browser-pilot, asset-creator, video-creator |
 | DEPS | dependency-doctor |
 | WORKSPACE | worktree |
+| GIT | git |
+| DOCUMENTS | doc-processor |
 
 ## Cross-Hub Mesh (L2 ↔ L2)
 
@@ -228,7 +231,94 @@ logic-guardian → verification (run tests after logic edits)
 logic-guardian → hallucination-guard (verify references after edit)
 logic-guardian → journal  (record logic changes as ADRs)
 logic-guardian → session-bridge (save manifest for cross-session)
+
+# ba (Business Analyst)
+ba ← cook             (Phase 1 BA gate — feature requests, integrations, greenfield)
+ba ← scaffold         (Phase 1 requirement elicitation)
+ba → plan             (hand-off: requirements.md → implementation planning)
+ba → brainstorm       (explore approaches when requirements are ambiguous)
+ba → research         (domain research for hidden requirements)
+
+# scaffold (Project Bootstrap)
+scaffold → ba         (Phase 1: requirement elicitation)
+scaffold → research   (Phase 2: tech stack research)
+scaffold → plan       (Phase 3: architecture planning)
+scaffold → design     (Phase 4: design system generation)
+scaffold → fix        (Phase 5: code generation)
+scaffold → test       (Phase 6: test generation)
+scaffold → docs       (Phase 7: documentation)
+scaffold → git        (Phase 8: initial commit)
+scaffold → verification (Phase 9: build + test verification)
+scaffold → sentinel   (Phase 9: security scan)
+
+# docs (Documentation Lifecycle)
+docs ← cook           (Phase 8: auto-update docs after feature)
+docs ← scaffold       (Phase 7: generate initial docs)
+docs → scout          (scan codebase for doc-worthy exports)
+docs → doc-processor  (generate PDF/DOCX from markdown)
+docs → git            (commit doc changes)
+
+# git (Semantic Git Operations)
+git ← cook            (Phase 7: semantic commit generation)
+git ← scaffold        (Phase 8: initial commit)
+git ← docs            (commit doc changes)
+git ← launch          (tag and release)
+
+# mcp-builder (MCP Server Builder)
+mcp-builder ← cook    (building an MCP server)
+mcp-builder → scout   (scan for existing MCP patterns)
+mcp-builder → test    (generate MCP server tests)
+mcp-builder → docs    (generate MCP server documentation)
+mcp-builder → hallucination-guard (verify SDK imports exist)
+
+# doc-processor (Document Format Utility)
+doc-processor ← docs  (PDF/DOCX generation)
+doc-processor ← marketing (generate branded PDFs)
 ```
+
+## Master Plan + Phase Files (Amateur-Proof Architecture)
+
+The `plan` skill (v0.4.0) produces structured plans designed for **any model to execute with high accuracy**.
+
+### Design Principle
+
+> Plan for the weakest coder. If Haiku (Amateur) can execute the phase file, every model benefits.
+
+### Structure
+
+```
+.rune/
+  plan-<feature>.md          ← Master plan: overview (<80 lines)
+  plan-<feature>-phase1.md   ← Phase 1: self-contained execution detail (<200 lines)
+  plan-<feature>-phase2.md   ← Phase 2: self-contained execution detail
+  ...
+```
+
+### Phase File Template (Amateur-Proof)
+
+Every phase file MUST include these 7 mandatory sections:
+
+| Section | Purpose | Why Amateur Needs It |
+|---------|---------|---------------------|
+| Data Flow | ASCII diagram of data movement | Prevents wrong function call order |
+| Code Contracts | Function signatures, interfaces | Prevents wrong return types |
+| Tasks | File paths, logic, edge cases | Prevents missed files |
+| Failure Scenarios | When/Then/Error table | Prevents missing error handling |
+| Rejection Criteria | Explicit DO NOTs | Prevents common anti-patterns |
+| Cross-Phase Context | Imports from prior, exports for future | Prevents broken dependencies |
+| Acceptance Criteria | Testable conditions | Prevents "done" without proof |
+
+### Execution Flow
+
+```
+1. cook Phase 0: check for existing master plan → resume from current phase
+2. cook Phase 2: plan produces master + phase files → user approves
+3. cook Phase 3-7: load ONLY current phase file → test → implement → quality → commit
+4. cook Phase 7: mark phase ✅ in master plan → announce next phase
+5. Next session: Phase 0 detects master plan → loads next phase → executes
+```
+
+**One phase per session = small context = better code from any model.**
 
 ## Context Bus
 
