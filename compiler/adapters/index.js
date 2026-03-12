@@ -9,6 +9,7 @@ import cursor from './cursor.js';
 import windsurf from './windsurf.js';
 import antigravity from './antigravity.js';
 import generic from './generic.js';
+import openclaw from './openclaw.js';
 
 const adapters = {
   claude,
@@ -16,6 +17,7 @@ const adapters = {
   windsurf,
   antigravity,
   generic,
+  openclaw,
 };
 
 /**

@@ -164,6 +164,48 @@ export async function buildAll({ runeRoot, outputRoot, adapter, disabledSkills =
   await writeFile(path.join(outputDir, indexFileName), indexContent, 'utf-8');
   stats.files.push(indexFileName);
 
+  // OpenClaw adapter: generate manifest + TypeScript entry point
+  if (adapter.name === 'openclaw' && adapter.generateManifest && adapter.generateEntryPoint) {
+    const pluginJsonPath = path.join(runeRoot, '.claude-plugin', 'plugin.json');
+    let pluginJson = { version: '0.0.0' };
+    if (existsSync(pluginJsonPath)) {
+      pluginJson = JSON.parse(await readFile(pluginJsonPath, 'utf-8'));
+    }
+
+    // Collect parsed skills for manifest/entry generation
+    const parsedSkills = [];
+    for (const sp of skillPaths) {
+      try {
+        const c = await readFile(sp, 'utf-8');
+        parsedSkills.push(parseSkill(c, sp));
+      } catch { /* skip on error */ }
+    }
+
+    // Read skill-router content for system prompt injection
+    const routerPath = path.join(runeRoot, 'skills', 'skill-router', 'SKILL.md');
+    let routerContent = '';
+    if (existsSync(routerPath)) {
+      routerContent = await readFile(routerPath, 'utf-8');
+    }
+
+    // Write openclaw.plugin.json to parent of skills dir (.openclaw/rune/)
+    const openclawRoot = path.resolve(outputDir, '..');
+    const manifest = adapter.generateManifest(parsedSkills, pluginJson);
+    await writeFile(
+      path.join(openclawRoot, 'openclaw.plugin.json'),
+      JSON.stringify(manifest, null, 2) + '\n',
+      'utf-8',
+    );
+    stats.files.push('openclaw.plugin.json');
+
+    // Write src/index.ts entry point
+    const srcDir = path.join(openclawRoot, 'src');
+    await mkdir(srcDir, { recursive: true });
+    const entryPoint = adapter.generateEntryPoint(parsedSkills, routerContent);
+    await writeFile(path.join(srcDir, 'index.ts'), entryPoint, 'utf-8');
+    stats.files.push('src/index.ts');
+  }
+
   return stats;
 }
 
