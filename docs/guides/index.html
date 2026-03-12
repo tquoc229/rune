@@ -380,9 +380,10 @@
       font-size: 16px; transition: all var(--transition); flex-shrink: 0;
     }
     .theme-toggle:hover { border-color: var(--accent); color: var(--text-primary); }
-    .goog-te-banner-frame, .skiptranslate { display: none !important; }
+    .goog-te-banner-frame { display: none !important; }
     body { top: 0 !important; }
-    .goog-te-gadget { font-size: 0 !important; }
+    .goog-te-gadget > span { display: none !important; }
+    .goog-te-gadget { font-size: 0; line-height: 0; }
     .goog-te-combo {
       background: var(--bg-card); color: var(--text-secondary);
       border: 1px solid var(--border); border-radius: var(--radius-sm);

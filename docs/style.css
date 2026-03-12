@@ -465,10 +465,12 @@ a:hover { opacity: 0.85; }
 .theme-toggle:hover, .lang-toggle:hover {
   border-color: var(--accent); color: var(--text-primary);
 }
-/* Google Translate overrides — hide ugly default UI */
-.goog-te-banner-frame, .skiptranslate { display: none !important; }
+/* Google Translate overrides — hide banner bar but keep inline dropdown */
+.goog-te-banner-frame { display: none !important; }
 body { top: 0 !important; }
-.goog-te-gadget { font-size: 0 !important; }
+/* Hide "Powered by" text but keep the <select> */
+.goog-te-gadget > span { display: none !important; }
+.goog-te-gadget { font-size: 0; line-height: 0; }
 .goog-te-combo {
   background: var(--bg-card); color: var(--text-secondary);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
