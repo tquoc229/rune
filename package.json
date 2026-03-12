@@ -1,7 +1,7 @@
 {
   "name": "@rune-kit/rune",
-  "version": "2.0.0",
-  "description": "Skill mesh for AI coding assistants — 49 skills, 170+ connections, all platforms",
+  "version": "2.1.1",
+  "description": "57-skill mesh for AI coding assistants — 5-layer architecture, 200+ connections, all platforms (Claude Code, Cursor, Windsurf, Antigravity)",
   "type": "module",
   "bin": {
     "rune": "./compiler/bin/rune.js"
@@ -15,9 +15,13 @@
     "claude-code",
     "cursor",
     "windsurf",
+    "antigravity",
     "ai-assistant",
+    "ai-coding",
     "skills",
-    "coding-agent"
+    "coding-agent",
+    "tdd",
+    "multi-platform"
   ],
   "author": "runedev",
   "license": "MIT",
@@ -32,6 +36,12 @@
     "compiler/",
     "skills/",
     "extensions/",
-    "contexts/"
-  ]
+    "contexts/",
+    "commands/",
+    "agents/"
+  ],
+  "homepage": "https://github.com/rune-kit/rune",
+  "bugs": {
+    "url": "https://github.com/rune-kit/rune/issues"
+  }
 }
