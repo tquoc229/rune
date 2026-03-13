@@ -1,16 +1,15 @@
----
-name: writing-architect
-description: Content Strategy Consultant. Orchestrates the choice of Style, Mechanism, and Pacing. Bridges the gap between the CMO's strategy and the Writer's execution.
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: opus
-  group: development
-  tools: "Read, Glob"
----
+# rune-writing-architect
+
+> Rune L2 Skill | development
+
 
 # writing-architect
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -62,3 +61,8 @@ Present the plan to the user: "Here is my creative direction. Shall I proceed to
 ## Cost Profile
 
 ~2000-4000 tokens. Opus is recommended for this high-level creative decision-making.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

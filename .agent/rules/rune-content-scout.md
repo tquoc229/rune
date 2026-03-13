@@ -1,16 +1,15 @@
----
-name: content-scout
-description: Insight Hunter. Gathers raw material from the codebase, internet, and market trends. Converts technical features into human benefits.
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: haiku
-  group: creation
-  tools: "Read, Glob, Grep, WebSearch, WebFetch"
----
+# rune-content-scout
+
+> Rune L2 Skill | creation
+
 
 # content-scout
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -25,7 +24,7 @@ The "Context Bridge". Content-scout ensures that the Agent is never writing in a
 
 ### Step 1: Internal Extraction (The Source)
 
-1. Invoke `rune:scout` to scan the codebase for the target feature or topic.
+1. Invoke `the rune-scout rule` to scan the codebase for the target feature or topic.
 2. Extract:
    - What the feature actually does (Functionality).
    - How it solves a problem (Technical Benefit).
@@ -33,7 +32,7 @@ The "Context Bridge". Content-scout ensures that the Agent is never writing in a
 
 ### Step 2: External Validation (The Evidence)
 
-1. Call `rune:research` or `rune:trend-scout` to find:
+1. Call `the rune-research rule` or `the rune-trend-scout rule` to find:
    - Market statistics related to the topic.
    - Competitor claims or gaps.
    - Emerging social trends (HackerNews, LinkedIn discussions).
@@ -63,3 +62,8 @@ Pass the synthesized insights to `persona-sentience` and `master-writer`.
 ## Cost Profile
 
 ~1000-2000 tokens. Haiku is perfect for this high-speed data gathering.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

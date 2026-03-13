@@ -1,16 +1,15 @@
----
-name: persona-sentience
-description: Method Acting Engine. Activates the Agent's soul. Translates psychological profiles into a living "Internal Monologue". Ensures every word sounds, feels, and thinks like the target persona.
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: sonnet
-  group: development
-  tools: "Read"
----
+# rune-persona-sentience
+
+> Rune L2 Skill | development
+
 
 # persona-sentience
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -62,3 +61,8 @@ Compare the raw thoughts against the `linguistic_quirks` in the profile. Does th
 ## Cost Profile
 
 ~2000-4000 tokens. Sonnet is ideal for this emotional and psychological roleplay.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

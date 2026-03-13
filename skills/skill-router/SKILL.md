@@ -84,6 +84,7 @@ These 5 skills are the main interface. Most user intents route here first:
 | User Intent | Route To | When |
 |---|---|---|
 | Build / implement / add feature / fix bug | `rune:cook` | Any code change request |
+| Content creation / Marketing / Writing | `rune:marketing-orchestrator` | Any content, blog, or social request |
 | Large multi-part task / parallel work | `rune:team` | 5+ files or 3+ modules |
 | Deploy + launch + marketing | `rune:launch` | Ship to production |
 | Legacy code / rescue / modernize | `rune:rescue` | Old/messy codebase |

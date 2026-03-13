@@ -1,16 +1,15 @@
----
-name: persona-forger
-description: Soul Archeologist. Builds deep psychological profiles (Snapshot Personas) from real-world data (articles, interviews, codebase comments). Decodes beliefs, biases, and experiential anchors.
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: opus
-  group: creation
-  tools: "Read, Write, Glob, Grep, WebSearch, WebFetch"
----
+# rune-persona-forger
+
+> Rune L2 Skill | creation
+
 
 # persona-forger
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -25,7 +24,7 @@ The "Soul Architect" of the system. Persona-forger is responsible for building t
 
 ### Step 1: Evidence Archeology
 
-1. Call `rune:research` to find:
+1. Call `the rune-research rule` to find:
    - Official interviews, personal blogs, or LinkedIn posts of the target person.
    - For internal project personas: read codebase comments and `CLAUDE.md`.
 2. Extract **Experiential Anchors**: Key stories or failures the person often cites as evidence for their beliefs.
@@ -64,3 +63,8 @@ Test the profile: "If I ask this persona about [X], would they respond like a ty
 ## Cost Profile
 
 ~3000-6000 tokens input, ~1000-2500 tokens output. Opus is mandatory for high-fidelity psychological decoding.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

@@ -1,16 +1,15 @@
----
-name: the-skeptic-editor
-description: The Red Team Editor. Independent auditor of content quality. Challenges logic, detects hidden clichés, and assesses the "Truth Value" of the article. Reject any content that feels like "standard AI fluff".
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: opus
-  group: quality
-  tools: "Read, Edit"
----
+# rune-the-skeptic-editor
+
+> Rune L2 Skill | quality
+
 
 # the-skeptic-editor
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -65,3 +64,8 @@ Emit one of the following:
 ## Cost Profile
 
 ~2000-4000 tokens. Opus is mandatory for this high-level independent auditing.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

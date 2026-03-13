@@ -1,17 +1,15 @@
----
-name: marketing-orchestrator
-description: High-level Marketing Project Manager & Strategic CMO. Orchestrates the full content lifecycle from project scaffolding to strategic alignment and roadmap tracking. MUST check strategic alignment before any content generation.
-agent: content-mind
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L1
-  model: opus
-  group: orchestrator
-  tools: "Read, Write, Edit, Bash, Glob, Grep"
----
+# rune-marketing-orchestrator
+
+> Rune L1 Skill | orchestrator
+
 
 # marketing-orchestrator
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -54,13 +52,13 @@ Before handing off to writers, challenge the request:
 ### Step 3: Resource Coordination
 
 After strategy is locked:
-1. REQUIRED SUB-SKILL: rune:persona-sentience (để nhập vai)
-2. REQUIRED SUB-SKILL: rune:writing-architect (để chọn style/mechanism)
-3. REQUIRED SUB-SKILL: rune:master-writer (để chấp bút)
+1. REQUIRED SUB-SKILL: the rune-persona-sentience rule (để nhập vai)
+2. REQUIRED SUB-SKILL: the rune-writing-architect rule (để chọn style/mechanism)
+3. REQUIRED SUB-SKILL: the rune-master-writer rule (để chấp bút)
 
 ### Step 4: Quality & Progress Enforcement
 
-1. REQUIRED SUB-SKILL: rune:the-skeptic-editor (để kiểm định chất lượng)
+1. REQUIRED SUB-SKILL: the rune-the-skeptic-editor rule (để kiểm định chất lượng)
 2. Monitor `the-skeptic-editor` output. If rejected, force `master-writer` to re-draft.
 3. Once content is verified, update the `project-roadmap.md` status to "DONE".
 4. Record the session artifact to `neural-memory`.
@@ -82,3 +80,8 @@ After strategy is locked:
 ## Cost Profile
 
 ~2000-4000 tokens input, ~1000-2000 tokens output. Use Opus for the Strategic Challenge phase to ensure deep business reasoning.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

@@ -1,16 +1,15 @@
----
-name: psych-linguistic-engine
-description: Audience Mind Reader. Uses cognitive psychology and NLP (Neuro-Linguistic Programming) to adjust the content's "frequency". Ensures the message resonates with the target audience's emotional state.
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: sonnet
-  group: development
-  tools: "Read"
----
+# rune-psych-linguistic-engine
+
+> Rune L2 Skill | development
+
 
 # psych-linguistic-engine
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -65,3 +64,8 @@ Deliver a "Linguistic Brief" to `master-writer` detailing:
 ## Cost Profile
 
 ~1500-3000 tokens. Sonnet handles the nuances of NLP and psychology perfectly.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

@@ -1,16 +1,15 @@
----
-name: style-distiller
-description: Language DNA Extractor. Distills writing styles from sample content. Analyzes pacing, vocabulary density, burstiness, and rhetorical patterns. Converts prose into technical style parameters.
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: sonnet
-  group: creation
-  tools: "Read, Write, Glob, Grep"
----
+# rune-style-distiller
+
+> Rune L2 Skill | creation
+
 
 # style-distiller
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -66,3 +65,8 @@ Produce a `style-dna.json` containing:
 ## Cost Profile
 
 ~2000-4000 tokens input, ~500-1000 tokens output. Sonnet is excellent for linguistic pattern recognition.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.

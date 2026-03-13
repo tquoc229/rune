@@ -1,18 +1,20 @@
 # Rune Skill Index
 
-> Platform: antigravity | Skills: 58 | Extensions: 13
+> Platform: antigravity | Skills: 70 | Extensions: 14
 
 ## Core Skills
 
 - rune-adversary.md
 - rune-asset-creator.md
 - rune-audit.md
+- rune-authentic-human-filter.md
 - rune-autopsy.md
 - rune-ba.md
 - rune-brainstorm.md
 - rune-browser-pilot.md
 - rune-completion-gate.md
 - rune-constraint-check.md
+- rune-content-scout.md
 - rune-cook.md
 - rune-db.md
 - rune-debug.md
@@ -30,14 +32,21 @@
 - rune-journal.md
 - rune-launch.md
 - rune-logic-guardian.md
+- rune-marketing-orchestrator.md
 - rune-marketing.md
+- rune-master-writer.md
 - rune-mcp-builder.md
+- rune-mechanism-designer.md
 - rune-neural-memory.md
 - rune-onboard.md
 - rune-perf.md
+- rune-persona-forger.md
+- rune-persona-sentience.md
 - rune-plan.md
 - rune-preflight.md
+- rune-proactive-ideator.md
 - rune-problem-solver.md
+- rune-psych-linguistic-engine.md
 - rune-rescue.md
 - rune-research.md
 - rune-review-intake.md
@@ -53,14 +62,17 @@
 - rune-session-bridge.md
 - rune-skill-forge.md
 - rune-skill-router.md
+- rune-style-distiller.md
 - rune-surgeon.md
 - rune-team.md
 - rune-test.md
+- rune-the-skeptic-editor.md
 - rune-trend-scout.md
 - rune-verification.md
 - rune-video-creator.md
 - rune-watchdog.md
 - rune-worktree.md
+- rune-writing-architect.md
 
 ## Extension Packs
 
@@ -69,6 +81,7 @@
 - rune-ext-analytics.md
 - rune-ext-backend.md
 - rune-ext-chrome-ext.md
+- rune-ext-content-mind.md
 - rune-ext-content.md
 - rune-ext-devops.md
 - rune-ext-ecommerce.md

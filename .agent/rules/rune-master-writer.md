@@ -1,16 +1,15 @@
----
-name: master-writer
-description: The Executioner. Synthesizes Persona, Architecture, Psychology, and Human Filtering into final multi-channel content. Controls the ultimate quality of the prose.
-metadata:
-  author: runedev
-  version: "1.0.0"
-  layer: L2
-  model: sonnet
-  group: development
-  tools: "Write, Edit"
----
+# rune-master-writer
+
+> Rune L2 Skill | development
+
 
 # master-writer
+
+## Platform Constraints
+
+- SHOULD: Monitor your context usage. If working on a long task, summarize progress before context fills up.
+- MUST: Before summarizing/compacting context, save important decisions and progress to project files.
+- SHOULD: Before ending, save architectural decisions and progress to .rune/ directory for future sessions.
 
 ## Purpose
 
@@ -71,3 +70,8 @@ If multiple channels are requested, transform the core message:
 ## Cost Profile
 
 ~3000-6000 tokens input, ~2000-4000 tokens output. Sonnet for high-quality creative synthesis.
+
+---
+> **Rune Skill Mesh** — 49 skills, 170+ connections
+> Source: https://github.com/rune-kit/rune
+> Full experience with subagents, hooks, adaptive routing → use Rune on Claude Code.
