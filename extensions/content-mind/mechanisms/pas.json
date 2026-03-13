@@ -1,0 +1,21 @@
+{
+  "name": "PAS",
+  "full_name": "Problem - Agitate - Solve",
+  "structure": [
+    {
+      "phase": "Problem",
+      "goal": "Xác định rõ nỗi đau mà độc giả đang gặp phải.",
+      "pacing": "Slow, descriptive"
+    },
+    {
+      "phase": "Agitate",
+      "goal": "Đẩy cao nỗi đau, chỉ ra hậu quả nếu không thay đổi.",
+      "pacing": "Fast, high-energy, punchy"
+    },
+    {
+      "phase": "Solve",
+      "goal": "Đưa ra giải pháp thực tế và nhẹ nhàng.",
+      "pacing": "Calm, supportive"
+    }
+  ]
+}
