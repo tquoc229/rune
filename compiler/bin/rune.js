@@ -47,6 +47,7 @@ function detectPlatform(projectRoot) {
   if (existsSync(path.join(projectRoot, '.agent'))) return 'antigravity';
   if (existsSync(path.join(projectRoot, '.openclaw'))) return 'openclaw';
   if (existsSync(path.join(projectRoot, '.codex'))) return 'codex';
+  if (existsSync(path.join(projectRoot, '.opencode'))) return 'opencode';
   return null;
 }
 
@@ -160,7 +161,7 @@ async function cmdBuild(projectRoot, args) {
 
   const adapter = getAdapter(platform);
   const runeRoot = config?.source || RUNE_ROOT;
-  const outputRoot = args.output || projectRoot;
+  const outputRoot = typeof args.output === 'string' ? args.output : projectRoot;
   const disabledSkills = config?.skills?.disabled || [];
   const enabledPacks = config?.extensions?.enabled || null;
 
@@ -221,6 +222,9 @@ async function cmdDoctor(projectRoot, args) {
 
 // ─── Arg Parsing ───
 
+// Flags that require a string value (not boolean)
+const VALUE_REQUIRED_FLAGS = new Set(['platform', 'output', 'disable', 'extensions']);
+
 function parseArgs(argv) {
   const args = {};
   const positional = [];
@@ -233,6 +237,9 @@ function parseArgs(argv) {
       if (next && !next.startsWith('--')) {
         args[key] = next;
         i++;
+      } else if (VALUE_REQUIRED_FLAGS.has(key)) {
+        log(`  ✗ Flag --${key} requires a value. Example: --${key} <value>`);
+        process.exit(1);
       } else {
         args[key] = true;
       }
@@ -272,7 +279,7 @@ async function main() {
       log('    doctor   Validate compiled output');
       log('');
       log('  Options:');
-      log('    --platform <name>   Override platform (cursor, windsurf, antigravity, codex, openclaw, generic)');
+      log('    --platform <name>   Override platform (cursor, windsurf, antigravity, codex, openclaw, opencode, generic)');
       log('    --output <dir>      Override output directory');
       log('    --disable <skills>  Comma-separated skills to disable');
       log('');
