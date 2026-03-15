@@ -8,8 +8,10 @@
   },
   "scripts": {
     "build": "node compiler/bin/rune.js build",
-    "doctor": "node compiler/bin/rune.js doctor",
-    "test": "node --test compiler/__tests__/*.test.js"
+    "doctor": "node compiler/bin/rune.js doctor && node scripts/version-sync-check.js",
+    "test": "node --test compiler/__tests__/*.test.js",
+    "version-check": "node scripts/version-sync-check.js",
+    "prepublishOnly": "node scripts/version-sync-check.js"
   },
   "keywords": [
     "claude-code",
