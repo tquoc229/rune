@@ -20,10 +20,10 @@ Mesh:      A ↔ B ↔ C             (B fails = A reaches C via D→E)
            D ↔ E ↔ F
 ```
 
-## What's New (v2.2.1)
+## What's New (v2.2.0)
 
 - **Enforcement Upgrade** — Antigravity-level IDE compliance: 5-type Request Classifier, File Ownership Matrix, Self-Verification HARD-GATE, Routing Proof, Clarification Gate, Phase Transition Protocol. Distributed via compiler — every skill file gets compliance preamble on non-Claude platforms
-- **All 13 Free Packs Deep** — every L4 extension pack now exceeds 500 lines of production-ready patterns and code examples. Total: 11,096 lines across free packs
+- **All 14 Free Packs Deep** — every L4 extension pack now exceeds 500 lines of production-ready patterns and code examples
 - **8 Platform Adapters** — Claude Code, Cursor, Windsurf, Google Antigravity, OpenAI Codex, OpenCode, OpenClaw, Generic
 - **58 Core Skills** — +3 since v2.1.0: adversary (red team), sentinel-env (env validation), chrome-ext pack
 - **Rune Pro** — 4 premium packs (product, sales, data-science, support) in private repo. $49 lifetime
@@ -36,7 +36,7 @@ Rune started as a **Claude Code plugin** and now compiles to **every major AI ID
 |---|---|---|
 | **Workflows** | 8-phase TDD cycle (cook), parallel DAG execution (team), rescue pipelines | Basic tool calling |
 | **Quality Gates** | preflight + sentinel + review + completion-gate (parallel) | None built-in |
-| **Domain Knowledge** | 12 extension packs (trading, SaaS, mobile, etc.) | General-purpose |
+| **Domain Knowledge** | 14 extension packs (trading, SaaS, mobile, etc.) | General-purpose |
 | **Cross-Session State** | .rune/ directory (decisions, conventions, progress) | Conversation only |
 | **Mesh Resilience** | 200+ skill connections, fail-loud-route-around | Linear execution |
 | **Cost Optimization** | Auto model selection (haiku/sonnet/opus per task) | Single model |
@@ -90,7 +90,7 @@ This compiles all 58 skills into your IDE's rules format. Same knowledge, same w
 | Skills available | 58/58 | 58/58 |
 | Mesh connections | 200+ (programmatic) | 200+ (rule references) |
 | Workflows & HARD-GATEs | Full | Full |
-| Extension packs | 12 | 12 |
+| Extension packs | 14 | 14 |
 | Subagent parallelism | Native | Sequential fallback |
 | Lifecycle hooks | 8 hooks (JS runtime) | Inline MUST/NEVER constraints |
 | Adaptive model routing | haiku/sonnet/opus | Single model |
@@ -185,14 +185,14 @@ This compiles all 58 skills into your IDE's rules format. Same knowledge, same w
 ║  Security:    sentinel-env                             ║
 ║  Memory:      neural-memory                            ║
 ╠══════════════════════════════════════════════════════╣
-║  L4: EXTENSION PACKS (13)                             ║
+║  L4: EXTENSION PACKS (14)                             ║
 ║  Domain-specific, install what you need                ║
 ║                                                        ║
 ║  @rune/ui │ @rune/backend │ @rune/devops │            ║
 ║  @rune/mobile │ @rune/security │ @rune/trading │      ║
 ║  @rune/saas │ @rune/ecommerce │ @rune/ai-ml │        ║
 ║  @rune/gamedev │ @rune/content │ @rune/analytics │    ║
-║  @rune/chrome-ext                                      ║
+║  @rune/chrome-ext │ @rune/zalo                         ║
 ╚══════════════════════════════════════════════════════╝
 ```
 
@@ -349,13 +349,13 @@ See [docs/MULTI-PLATFORM.md](docs/MULTI-PLATFORM.md) for the full architecture.
 
 ```
 Core Skills:       58 (L0: 1 │ L1: 5 │ L2: 27 │ L3: 25)
-Extension Packs:   13 free + 4 pro + 2 business
+Extension Packs:   14 free + 4 pro + 2 business
 Mesh Connections:  200+ cross-references
 Connections/Skill: 3.4 avg
 Platforms:         8 (Claude Code, Cursor, Windsurf, Antigravity, Codex, OpenCode, OpenClaw, Generic)
 Compiler:          ~1400 LOC (parser + 8 transforms + 8 adapters + CLI)
 Quality:           58/58 skills with Output Format, Sharp Edges, Done When, Cost Profile
-Pack Depth:        17,013 total lines across 19 packs (all free packs rated Deep)
+Pack Depth:        20 packs total (14 free + 4 pro + 2 business, all free packs rated Deep)
 ```
 
 ## License

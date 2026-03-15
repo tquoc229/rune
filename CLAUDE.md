@@ -63,7 +63,7 @@ rune/
 
 ## Current Wave
 
-58 core skills built (v2.1.0 — "The Missing Pieces").
+58 core skills built (v2.2.0 — "The Missing Pieces").
 
 ### L0 Router (1)
 skill-router — meta-enforcement layer, routes every action through the correct skill
