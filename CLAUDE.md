@@ -84,10 +84,10 @@ context-engine, journal, session-bridge, neural-memory, worktree,
 watchdog, scope-guard, browser-pilot, asset-creator, video-creator,
 dependency-doctor, git, doc-processor, sentinel-env
 
-### L4 Extension Packs (13)
+### L4 Extension Packs (14)
 @rune/ui, @rune/backend, @rune/devops, @rune/mobile, @rune/security,
 @rune/trading, @rune/saas, @rune/ecommerce, @rune/ai-ml, @rune/gamedev,
-@rune/content, @rune/analytics, @rune/chrome-ext
+@rune/content, @rune/analytics, @rune/chrome-ext, @rune/zalo
 
 All layers complete. Repository: https://github.com/rune-kit/rune
 
