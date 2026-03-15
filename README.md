@@ -20,7 +20,7 @@ Mesh:      A ↔ B ↔ C             (B fails = A reaches C via D→E)
            D ↔ E ↔ F
 ```
 
-## What's New (v2.2.0)
+## What's New (v2.2.1)
 
 - **Enforcement Upgrade** — Antigravity-level IDE compliance: 5-type Request Classifier, File Ownership Matrix, Self-Verification HARD-GATE, Routing Proof, Clarification Gate, Phase Transition Protocol. Distributed via compiler — every skill file gets compliance preamble on non-Claude platforms
 - **All 14 Free Packs Deep** — every L4 extension pack now exceeds 500 lines of production-ready patterns and code examples
