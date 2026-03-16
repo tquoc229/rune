@@ -378,6 +378,8 @@ LOW       — style inconsistency, naming suggestion, minor refactor opportunity
 | Skipping UI anti-pattern checks for frontend changes | MEDIUM | Any .tsx/.jsx/.svelte/.vue in diff → MUST run UI/UX Anti-Pattern Checks section |
 | Skipping spec compliance check (Step 5.5 Stage 1) | HIGH | Code quality without spec check ships clean code that does the wrong thing — always load the plan/ticket before reviewing quality |
 | Treating purple/indigo accent as "just a color choice" | MEDIUM | It is a documented AI-generated UI signature — always flag for domain justification |
+| Suggesting "add X" without checking if X is used | MEDIUM | YAGNI pushback: grep codebase for the suggested feature → if uncalled anywhere → respond "Not called anywhere. Remove? (YAGNI)". Valid pushback, not laziness |
+| Adding abstractions "for future flexibility" | MEDIUM | Three similar lines > premature abstraction. Only abstract when there are 3+ concrete callers today |
 
 ## Done When
 

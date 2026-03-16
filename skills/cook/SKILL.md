@@ -556,6 +556,27 @@ cook instance → commit → push → create PR → wait CI
   IF 3 retries fail → escalate to user with CI logs
 ```
 
+### Formal Pause/Resume (`.continue-here.md`)
+
+When cook must pause mid-phase (context limit, user break, session end before phase completes):
+
+1. Create `.rune/.continue-here.md` with structured handoff:
+```markdown
+## Continue Here
+- **Phase**: [current phase number and name]
+- **Task**: [current task within phase — e.g., "Task 3 of 5"]
+- **Completed**: [list of tasks done this session]
+- **Remaining**: [list of tasks not yet started]
+- **Decisions**: [any decisions made this session]
+- **Blockers**: [if any — what's stuck and why]
+- **WIP Files**: [files modified but not yet committed]
+```
+2. Create a WIP commit: `wip: cook phase N paused at task M`
+3. Phase 0 (RESUME CHECK) detects `.continue-here.md` → resumes from exact task position
+4. After successful resume and phase completion → delete `.continue-here.md`
+
+This is more granular than Phase 0's plan-level resume — it resumes within a phase, not just between phases.
+
 ### Exit Conditions (Mandatory for Autonomous Runs)
 
 Every cook invocation inside `team` or autonomous workflows MUST have exit conditions:

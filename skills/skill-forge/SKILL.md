@@ -146,11 +146,16 @@ metadata:
 ---
 ```
 
-**Description rules:**
+**Description rules (CSO Discipline):**
 - MUST start with "Use when..."
 - MUST describe triggering conditions, NOT workflow
 - MUST be third person
 - MUST NOT summarize what the skill does internally
+- AI reads description → decides whether to invoke → if description contains workflow summary, AI skips reading the full SKILL.md content (it thinks it already knows)
+- Test: if you can execute the skill from the description alone, the description leaks too much
+
+Bad: "Analyzes code quality through 6-step process: scan files, check patterns, run linters, compare metrics, generate report, suggest fixes"
+Good: "Use when code changes need quality review before commit. Symptoms: PR ready, refactor complete, pre-release check."
 
 ```yaml
 # BAD: Summarizes workflow — agent reads description, skips full content
@@ -330,10 +335,12 @@ Techniques:
 | Editing skill without testing the edit | MEDIUM | Adapting section: same TDD cycle for edits |
 | Overly verbose skill burns context tokens | MEDIUM | Token efficiency guidelines: layer-based word targets |
 | Code blocks in SKILL.md bloat every invocation | HIGH | WHY vs HOW split: SKILL.md ≤10-line code blocks, extract rest to references/ |
+| Writing skill without TDD (no observed failures first) | CRITICAL | Skill TDD: RED (run scenario WITHOUT skill → document failures) → GREEN (write skill targeting failures) → REFACTOR (find bypasses → add blocks) |
+| Description leaks workflow → agent skips full content | HIGH | CSO Discipline: description = triggers only. Test: can you execute from description alone? If yes, it leaks too much |
 
 ## Done When
 
-- Baseline test documented with observed failures
+- Baseline test documented with observed failures (TDD RED phase)
 - SKILL.md follows template format completely
 - Skill passes pressure test (agent complies with skill loaded)
 - No new failures in 2 consecutive varied-pressure test runs
