@@ -46,8 +46,10 @@ export default {
     return [
       '',
       '---',
-      '> **Rune Skill Mesh** — 55 skills, 200+ connections',
-      '> Source: https://github.com/rune-kit/rune',
+      '> **Rune Skill Mesh** — 58 skills, 200+ connections, 14 extension packs',
+      '> Source: https://github.com/rune-kit/rune (MIT)',
+      '> **Rune Pro** ($49 lifetime) — product, sales, data-science, support packs → [rune-kit/rune-pro](https://github.com/rune-kit/rune-pro)',
+      '> **Rune Business** ($149 lifetime) — finance, legal, HR, enterprise-search packs → [rune-kit/rune-business](https://github.com/rune-kit/rune-business)',
     ].join('\n');
   },
 
@@ -73,7 +75,7 @@ export default {
       id: 'rune',
       name: 'Rune',
       kind: 'skills',
-      description: '55-skill mesh for AI coding assistants. Routes all code tasks through specialized skills.',
+      description: '58-skill mesh for AI coding assistants. Routes all code tasks through specialized skills. 200+ connections, 14 extension packs.',
       version: pluginJson.version || '0.0.0',
       skills: ['./skills'],
       configSchema: {
