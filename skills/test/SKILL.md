@@ -3,7 +3,7 @@ name: test
 description: "TDD test writer. Writes failing tests FIRST (red), then verifies they pass after implementation (green). Covers unit, integration, and e2e tests."
 metadata:
   author: runedev
-  version: "0.2.0"
+  version: "0.3.0"
   layer: L2
   model: sonnet
   group: development
@@ -23,6 +23,13 @@ THE IRON LAW: Write code before test? DELETE IT. Start over.
 - Do NOT look at it to "inform" test design
 - Delete means delete. `git checkout -- <file>` or remove the changes entirely.
 This is not negotiable. This is not optional. "But I already wrote it" is a sunk cost fallacy.
+
+ROLE BOUNDARY: Test writes TEST FILES only. NEVER modify source/implementation files.
+- Do NOT "quickly fix" a broken import in source to make tests run
+- Do NOT refactor source code to be "more testable"
+- Do NOT add missing exports to source files
+- If source needs changes → hand off to `rune:fix`. Test's job ends at the test file.
+This separation ensures test never writes code biased toward passing its own tests.
 </HARD-GATE>
 
 ## Instructions
@@ -232,6 +239,7 @@ If you catch yourself with ANY of these, delete implementation code and restart 
 7. MUST NOT say "tests pass" without showing actual test runner output
 8. MUST delete implementation code written before tests — Iron Law, no exceptions
 9. MUST show RED phase output (actual failure) — "I confirmed they fail" without output is REJECTED
+10. MUST NOT modify source/implementation files — test writes test files ONLY, hand off source changes to rune:fix
 
 ## Mesh Gates
 
@@ -274,6 +282,7 @@ Known failure modes for this skill. Check these before declaring done.
 | Testing mock behavior instead of real code | HIGH | Constraint 4: test what the real code does, not what the mock returns |
 | Coverage below 80% without filling gaps | MEDIUM | Coverage Gate: identify uncovered lines and write additional tests |
 | Introducing a new test framework instead of using existing one | MEDIUM | Constraint 6: detect framework first, use project's existing one always |
+| Modifying source files to make tests work | HIGH | Role boundary: test writes test files ONLY — source changes go to rune:fix |
 
 ## Done When
 

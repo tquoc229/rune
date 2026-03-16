@@ -3,7 +3,7 @@ name: skill-forge
 description: Use when creating new Rune skills, editing existing skills, or verifying skill quality before deployment. Applies TDD discipline to skill authoring — test before write, verify before ship.
 metadata:
   author: runedev
-  version: "1.0.0"
+  version: "1.1.0"
   layer: L2
   model: opus
   group: creation
@@ -105,6 +105,33 @@ Follow `docs/SKILL-TEMPLATE.md` format. Required sections:
 | Done When | YES | Verifiable completion criteria |
 | Cost Profile | YES | Token estimate |
 | Mesh Gates | L1/L2 only | Progression guards |
+
+#### SKILL.md Anatomy — WHY vs HOW Split
+
+A skill file answers WHY and WHEN — not HOW. Code examples, syntax references, and implementation patterns belong in separate files:
+
+```
+skills/[name]/
+├── SKILL.md          ← WHY: purpose, triggers, constraints, sharp edges (~150-300 lines)
+├── references/       ← HOW: code patterns, syntax tables, API examples
+│   ├── patterns.md   ← Implementation patterns with code blocks
+│   └── gotchas.md    ← Language/framework-specific pitfalls
+└── scripts/          ← WHAT: deterministic operations (shell, node)
+```
+
+**Rules:**
+1. SKILL.md MUST NOT contain code blocks longer than 10 lines — move to `references/`
+2. One excellent inline example (≤10 lines) is OK for clarity — more than that is a smell
+3. Format templates (Output Format section) are NOT code — they stay in SKILL.md
+4. Pressure test scenarios (Phase 2) are NOT code — they stay in SKILL.md
+5. If a skill has >3 code blocks → create `references/` and extract them
+
+**Why this matters:** Code blocks in SKILL.md inflate context tokens on EVERY invocation. References are loaded only when needed. A 500-line SKILL.md with 200 lines of code examples should be a 300-line SKILL.md + a 200-line references file.
+
+<HARD-GATE>
+Code blocks in SKILL.md > 10 lines = review failure.
+Extract to references/ or scripts/. No exceptions.
+</HARD-GATE>
 
 #### Frontmatter Rules
 
@@ -302,6 +329,7 @@ Techniques:
 | Skill passes test but breaks mesh connections | MEDIUM | Phase 6 integration: verify output compatibility |
 | Editing skill without testing the edit | MEDIUM | Adapting section: same TDD cycle for edits |
 | Overly verbose skill burns context tokens | MEDIUM | Token efficiency guidelines: layer-based word targets |
+| Code blocks in SKILL.md bloat every invocation | HIGH | WHY vs HOW split: SKILL.md ≤10-line code blocks, extract rest to references/ |
 
 ## Done When
 

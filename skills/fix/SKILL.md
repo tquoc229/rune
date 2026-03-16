@@ -3,7 +3,7 @@ name: fix
 description: Apply code changes and fixes. Writes implementation code, applies bug fixes, and verifies changes with tests. Core action hub in the development mesh.
 metadata:
   author: runedev
-  version: "0.3.0"
+  version: "0.4.0"
   layer: L2
   model: sonnet
   group: development
@@ -112,6 +112,17 @@ Single validation at one point can be bypassed by different code paths, refactor
 
 Apply this when: the bug was caused by invalid data flowing through multiple layers. Skip for trivial one-liner fixes.
 
+### Step 5b: Preserve Debug Instrumentation
+
+If `rune:debug` left `#region agent-debug` markers in the code:
+
+1. **During fix**: DO NOT remove these markers — they capture the investigation trail
+2. **After fix verified** (tests pass, lint pass): scan for `#region agent-debug` markers
+3. **Remove markers and their contents** in a final cleanup pass ONLY after full verification
+4. If the fix is partial or tests still fail → KEEP all markers for the next debug cycle
+
+**Why:** Premature cleanup of debug instrumentation erases failure history. If the bug recurs after cleanup, the next debug session starts from zero. Keeping markers until verification means downstream skills can see what was already investigated.
+
 ### Step 6: Self-Review
 
 Verify correctness of the changes just made.
@@ -141,6 +152,7 @@ Produce a structured summary of all changes made.
 5. MUST follow project conventions found by scout — don't invent new patterns
 6. MUST NOT add unplanned features while fixing — fix only what was diagnosed
 7. MUST track fix attempt number — this feeds debug's 3-Fix Escalation classification
+8. MUST preserve `#region agent-debug` markers until fix is fully verified — cleanup only after tests pass
 
 ## Mesh Gates
 
@@ -182,6 +194,7 @@ Known failure modes for this skill. Check these before declaring done.
 | Not running tests after each individual change | MEDIUM | Constraint 3: never batch untested changes — run tests after each edit |
 | Fixing at crash site without tracing data origin | HIGH | Defense-in-depth: trace where bad data ORIGINATES, add validation at every layer it passes through |
 | Single-point validation (fix one spot, hope it holds) | MEDIUM | Step 5: add entry + business logic + environment + debug layers for data-flow bugs |
+| Removing debug instrumentation before fix is verified | MEDIUM | Step 5b: preserve `#region agent-debug` markers until all tests pass — premature cleanup erases failure history |
 
 ## Done When
 

@@ -3,7 +3,7 @@ name: debug
 description: Root cause analysis for bugs and unexpected behavior. Traces errors through code, uses structured reasoning, and hands off to fix when cause is found. Core of the debug↔fix mesh.
 metadata:
   author: runedev
-  version: "0.3.0"
+  version: "0.4.0"
   layer: L2
   model: sonnet
   group: development
@@ -100,6 +100,31 @@ Before hypothesizing, add diagnostic logging at EACH component boundary:
 - Run once → analyze logs → identify WHICH boundary fails → THEN hypothesize
 
 This reveals: "secrets reach workflow ✓, workflow reaches build ✗" — pinpoints the failing layer.
+
+### Step 2b: Instrument with Preserved Markers
+
+When adding diagnostic logging or instrumentation during investigation, mark ALL additions with region markers:
+
+```
+// #region agent-debug — [hypothesis being tested]
+console.log('[DEBUG] value at boundary:', data);
+// #endregion agent-debug
+```
+
+Language-appropriate equivalents:
+- Python: `# region agent-debug` / `# endregion agent-debug`
+- Rust: `// region agent-debug` / `// endregion agent-debug`
+
+**Why preserved markers matter:**
+- `rune:fix` will preserve these markers until the bug is fully resolved and tests pass
+- If the bug recurs, markers show exactly what was previously instrumented
+- Cleaning up debug traces before the fix is verified prevents learning from failure history
+- After fix is verified + tests pass → fix will clean up markers in a final pass
+
+<HARD-GATE>
+ALL diagnostic code added during debug MUST be wrapped in `#region agent-debug` markers.
+Unmarked instrumentation will be treated as stray code and removed prematurely.
+</HARD-GATE>
 
 ### Step 3: Form Hypotheses
 
@@ -231,6 +256,7 @@ ALL of these mean: STOP. Return to Step 2 (Gather Evidence).
 | Same bug "fixed" 3+ times without questioning architecture | CRITICAL | 3-Fix Escalation Rule: classify failure → same blocker category = brainstorm(rescue), different bugs = plan redesign |
 | Escalating to plan when the APPROACH is wrong (not the module) | HIGH | If all 3 fixes hit the same category of blocker (API limit, platform gap), the approach needs pivoting via brainstorm(rescue), not re-planning |
 | Not tracking fix attempt number for recurring bugs | HIGH | Debug Report MUST include Fix Attempt counter — enables escalation gate |
+| Adding instrumentation without region markers | MEDIUM | All debug logging MUST use `#region agent-debug` — unmarked code gets cleaned up prematurely by fix |
 
 ## Done When
 
