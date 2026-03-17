@@ -5,7 +5,7 @@ context: fork
 agent: general-purpose
 metadata:
   author: runedev
-  version: "0.7.0"
+  version: "0.8.0"
   layer: L1
   model: sonnet
   group: orchestrator
@@ -322,6 +322,11 @@ If the coder model needs info from other phases, it's in the Cross-Phase Context
 1. Mark Phase 4 as `in_progress`
 2. **Phase-file execution** — if working from a master plan + phase file:
    - Execute tasks listed in the phase file (the `## Tasks` section)
+   - **Wave-based execution**: if tasks are organized into waves (see `plan` skill), execute wave-by-wave:
+     - Wave 1 tasks first (no dependencies — can run in parallel if inside `team`)
+     - Wave 2 tasks only after ALL Wave 1 tasks complete
+     - Within a wave: `team` dispatches as parallel subagents; solo cook runs sequentially
+     - If a task in Wave N fails → do NOT start Wave N+1. Fix or DECOMPOSE the failed task first
    - Follow code contracts from `## Code Contracts` section
    - Respect rejection criteria from `## Rejection Criteria` section
    - Handle failure scenarios from `## Failure Scenarios` section
@@ -419,6 +424,7 @@ PARALLEL EXECUTION:
 **REQUIRED SUB-SKILL**: Use `rune:completion-gate`
 - Validate that agent claims match evidence trail
 - Check: tests actually ran (stdout captured), files actually changed (git diff), build actually passed
+- Check: no truncated code files (`// ...`, `// rest of code`, bare ellipsis) — agent MUST complete all output
 - Any UNCONFIRMED claim → BLOCK with specific gap identified
 
 **Gate**: If sentinel finds CRITICAL security issue → STOP, fix it, re-run. Non-negotiable.

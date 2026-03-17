@@ -3,7 +3,7 @@ name: plan
 description: Create structured implementation plans from requirements. Produces master plan + phase files for enterprise-scale project management. Master plan = overview (<80 lines). Phase files = execution detail (<150 lines each). Each session handles 1 phase. Uses opus for deep reasoning.
 metadata:
   author: runedev
-  version: "0.4.0"
+  version: "0.5.0"
   layer: L2
   model: opus
   group: creation
@@ -149,6 +149,46 @@ Phase decomposition rules:
 - **Dependencies before consumers**: create what's imported before the importer
 - **Test alongside**: each phase includes its own test tasks
 - **Max 5-7 tasks per phase**: if more, split the phase
+- **Vertical slices over horizontal layers**: prefer "auth end-to-end" over "all models → all APIs → all UI"
+
+### Wave-Based Task Grouping (within each phase)
+
+Tasks inside a phase MUST be organized into **waves** based on dependency analysis. Independent tasks within the same wave can execute in parallel.
+
+```
+## Tasks
+
+### Wave 1 (parallel — no dependencies)
+- [ ] Task 1 — Create types/interfaces
+  - File: `src/types.ts` (new)
+  - ...
+- [ ] Task 2 — Create validation schema
+  - File: `src/validation.ts` (new)
+  - ...
+
+### Wave 2 (depends on Wave 1)
+- [ ] Task 3 — Implement core logic (imports types from Task 1)
+  - File: `src/core.ts` (new)
+  - depends_on: [Task 1]
+  - ...
+
+### Wave 3 (depends on Wave 2)
+- [ ] Task 4 — Wire into API endpoint (imports core from Task 3)
+  - File: `src/routes/api.ts` (modify)
+  - depends_on: [Task 3]
+  - ...
+- [ ] Task 5 — Write integration tests (tests core from Task 3)
+  - File: `tests/core.test.ts` (new)
+  - depends_on: [Task 3]
+  - ...
+```
+
+**Wave rules:**
+- Wave 1 = tasks with zero dependencies (types, schemas, configs) — always first
+- Subsequent waves: a task goes in the earliest wave where ALL its `depends_on` tasks are in prior waves
+- Tasks within the same wave have NO dependencies on each other → safe for parallel dispatch
+- `depends_on` field is MANDATORY for Wave 2+ tasks — explicit is better than implicit
+- `team` orchestrator can dispatch wave tasks as parallel subagents; solo `cook` executes sequentially within a wave but respects wave ordering
 
 ### Step 4 — Write Master Plan File
 
@@ -519,6 +559,8 @@ Max 200 lines. Self-contained — coder needs ONLY this file.
 | Phase with zero test tasks | CRITICAL | HARD-GATE rejects it |
 | 10+ phases overwhelming the master plan | MEDIUM | Max 8 phases — split into sub-projects if more |
 | Task without File path or Verify command | HIGH | Every task MUST have File + Test + Verify + Commit fields — no vague "implement the feature" tasks |
+| Horizontal layer planning (all models → all APIs → all UI) | HIGH | Vertical slices parallelize better. Use wave-based grouping: independent tasks in same wave, dependent tasks in later waves |
+| Tasks without `depends_on` in Wave 2+ | MEDIUM | Implicit dependencies break parallel dispatch. Every Wave 2+ task MUST declare `depends_on` |
 | Plan ignores locked Decisions from BA | CRITICAL | Decision Compliance section cross-checks requirements.md — locked decisions are non-negotiable |
 
 ## Done When

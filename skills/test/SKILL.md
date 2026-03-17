@@ -3,7 +3,7 @@ name: test
 description: "TDD test writer. Writes failing tests FIRST (red), then verifies they pass after implementation (green). Covers unit, integration, and e2e tests."
 metadata:
   author: runedev
-  version: "0.4.0"
+  version: "0.5.0"
   layer: L2
   model: sonnet
   group: development
@@ -168,15 +168,73 @@ Input:  git diff main --name-only
 Output: Prioritized test plan targeting only affected paths
 ```
 
-## Test Types
+## Test Types — 4-Layer Methodology
 
-| Type | When | Framework | Speed |
-|------|------|-----------|-------|
-| Unit | Individual functions, pure logic | jest/vitest/pytest/cargo test | Fast |
-| Integration | API endpoints, DB operations | supertest/httpx/reqwest | Medium |
-| E2E | Critical user flows | Playwright/Cypress via browser-pilot | Slow |
-| Regression | After bug fixes | Same as unit | Fast |
-| Diff-aware | After implementation, large codebases | Same as unit + integration | Fast (targeted) |
+Tests are organized in 4 layers. Each layer catches a different failure class. Higher layers are slower but catch integration issues lower layers miss.
+
+| Layer | Type | What It Catches | Framework | Speed |
+|-------|------|-----------------|-----------|-------|
+| L1 | **Unit** | Logic bugs, boundary violations, pure function errors | jest/vitest/pytest/cargo test | Fast |
+| L2 | **Integration** | API contract breaks, DB query errors, service interaction failures | supertest/httpx/reqwest | Medium |
+| L3 | **True Backend** | Real tool/service output correctness (not just exit 0) | Same + real software invocation | Medium-Slow |
+| L4 | **E2E / Subprocess** | Full workflow from user/agent perspective, installed app works | Playwright/Cypress/subprocess | Slow |
+
+**Layer rules:**
+- **L1 (Unit)**: Synthetic data, no external deps. Every function tested in isolation. Fast, deterministic, CI-friendly
+- **L2 (Integration)**: Tests service boundaries — API endpoints, DB operations, message queues. May need test DB or mock server
+- **L3 (True Backend)**: **Invokes the REAL tool/service** and verifies output programmatically. No graceful degradation — if the dependency isn't installed, tests FAIL (not skip). Verify: magic bytes, file size > 0, content structure. Print artifact paths for manual inspection
+- **L4 (E2E/Subprocess)**: Tests the installed command/app via subprocess or browser automation. Full user workflow: input → process → output → verify
+
+**"No graceful degradation" rule** (L3/L4): Hard dependencies MUST be installed. Tests MUST NOT skip or produce fake results when the dependency is missing. A silently skipping test is worse than a loudly failing test.
+
+Additional modes:
+
+| Type | When | Speed |
+|------|------|-------|
+| Regression | After bug fixes | Fast |
+| Diff-aware | After implementation, large codebases (Phase 6.5) | Fast (targeted) |
+
+## TEST.md — Test Plan + Results Document
+
+For non-trivial features (3+ test files or 20+ test cases), create a `TEST.md` in the test directory. This is BOTH a planning doc (written BEFORE tests) and results doc (appended AFTER tests pass).
+
+### Before writing tests — write the plan:
+```markdown
+# Test Plan: [Feature Name]
+
+## Test Inventory
+- `test_core.py`: ~XX unit tests planned (L1)
+- `test_integration.py`: ~XX integration tests planned (L2)
+- `test_e2e.py`: ~XX E2E tests planned (L3/L4)
+
+## Unit Test Plan (L1)
+| Module | Functions | Edge Cases | Est. Tests |
+|--------|-----------|------------|------------|
+| `core/auth.py` | login, register, refresh | expired token, invalid creds, rate limit | 12 |
+
+## E2E Scenarios (L3/L4)
+| Workflow | Simulates | Operations | Verified |
+|----------|-----------|------------|----------|
+| User signup | New user onboarding | register → verify → login | Token valid, profile created |
+
+## Realistic Workflow Scenarios
+- **[Name]**: [Step 1] → [Step 2] → verify [output properties]
+```
+
+### After tests pass — append results:
+```markdown
+## Test Results
+[Paste full `pytest -v --tb=no` or `npm test` output]
+
+## Summary
+- Total: XX | Passed: XX | Failed: 0
+- Execution time: X.Xs | Coverage: XX%
+
+## Gaps
+- [Areas not covered and why]
+```
+
+**Why TEST.md**: Planning tests before code catches missing edge cases early. Appending results creates permanent evidence. One document = complete testing story.
 
 ## Error Recovery
 

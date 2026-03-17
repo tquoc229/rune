@@ -4,7 +4,7 @@ description: "Validates agent claims against evidence trail. Catches 'done' with
 user-invocable: false
 metadata:
   author: runedev
-  version: "1.2.0"
+  version: "1.3.0"
   layer: L3
   model: haiku
   group: validation
@@ -123,6 +123,34 @@ IF no evidence found:
 UNCONFIRMED — 1 claim lacks evidence, 1 contradicted. Cannot proceed to commit.
 ```
 
+### Step 4.5 — Cross-Phase Integration Check
+
+> From GSD (gsd-build/get-shit-done, 30.8k★): "Phase boundaries are where integration bugs hide."
+
+When validating a completed phase in a multi-phase plan, check for integration gaps between phases:
+
+1. **Orphaned exports** — files/functions created in this phase that claim to be used by future phases (see `## Cross-Phase Context → Exports`) but are not yet importable:
+   ```
+   Grep for the export name in the current codebase:
+   - If export exists AND is importable → CONFIRMED
+   - If export exists but has wrong signature vs phase file contract → CONTRADICTED
+   - Expected export missing entirely → UNCONFIRMED ("Phase N claims to export X but X not found")
+   ```
+
+2. **Uncalled routes** — API endpoints added in this phase but not wired to any frontend/consumer yet:
+   - This is OK if a future phase handles wiring (check master plan)
+   - Flag as WARN if no future phase mentions consuming this route
+
+3. **Auth gaps** — new endpoints or pages without authentication/authorization:
+   - `Grep` for route handlers without auth middleware
+   - Flag as WARN (may be intentional for public endpoints, but worth checking)
+
+4. **E2E flow trace** — for the primary user flow this phase enables:
+   - Trace: entry point → business logic → data layer → response
+   - If any step in the chain is missing or stubbed → CONTRADICTED
+
+**This step is OPTIONAL for single-phase tasks and MANDATORY for multi-phase master plans.**
+
 ### Step 5 — Evidence Quality Gate
 
 Before emitting verdict, verify evidence quality:
@@ -170,6 +198,8 @@ Completion Gate Report with status (CONFIRMED/UNCONFIRMED/CONTRADICTED), claim v
 | Agent pre-generates evidence by running commands proactively | LOW | This is actually GOOD behavior — we want agents to provide evidence |
 | Completion-gate itself claims "all confirmed" without evidence | CRITICAL | Gate report MUST include the evidence table — no table = report is invalid |
 | Existence Theater — agent creates files but they're stubs | HIGH | Step 1b stub detection: grep for Placeholder/TODO/NotImplementedError in new files |
+| Cross-phase integration gaps — exports exist but wrong signature | HIGH | Step 4.5: verify exports match Code Contracts from phase file |
+| Phase complete but E2E flow broken — missing link in the chain | MEDIUM | Step 4.5 E2E flow trace: entry → logic → data → response must all be connected |
 
 ## Done When
 
