@@ -3,7 +3,7 @@ name: "@rune/security"
 description: Deep security analysis — OWASP audit, penetration testing patterns, secret management, compliance checking, supply chain security, and API hardening.
 metadata:
   author: runedev
-  version: "0.2.0"
+  version: "0.3.0"
   layer: L4
   price: "$15"
   target: Security engineers
@@ -20,12 +20,12 @@ tools:
 
 ## Purpose
 
-@rune/security delivers manual-grade security analysis for teams that need more than an automated gate. Where `sentinel` (L2) runs fast checks on every commit, this pack runs thorough, on-demand audits: threat modeling entire auth flows, mapping real attack surfaces, designing vault strategies, auditing supply chain integrity, hardening API surfaces, and producing compliance audit trails. All six skills share the same threat mindset — assume breach, prove safety, document evidence.
+@rune/security delivers manual-grade security analysis for teams that need more than an automated gate. Where `sentinel` (L2) runs fast checks on every commit, this pack runs thorough, on-demand audits: threat modeling entire auth flows, mapping real attack surfaces, designing vault strategies, auditing supply chain integrity, hardening API surfaces, enforcing multi-layer validation, and producing compliance audit trails. All seven skills share the same threat mindset — assume breach, prove safety, document evidence.
 
 ## Triggers
 
 - `/rune security` — manual invocation, full pack audit
-- `/rune owasp-audit` | `/rune pentest-patterns` | `/rune secret-mgmt` | `/rune compliance` | `/rune supply-chain` | `/rune api-security` — single skill invocation
+- `/rune owasp-audit` | `/rune pentest-patterns` | `/rune secret-mgmt` | `/rune compliance` | `/rune supply-chain` | `/rune api-security` | `/rune defense-in-depth` — single skill invocation
 - Called by `cook` (L1) when auth, crypto, payment, or PII-handling code is detected
 - Called by `review` (L2) when security-critical patterns are flagged during code review
 - Called by `deploy` (L2) before production releases when security scope is active
@@ -40,6 +40,7 @@ tools:
 | [compliance](skills/compliance.md) | opus | SOC 2, GDPR, HIPAA, PCI-DSS v4.0 gap analysis, automated evidence collection, and audit-ready evidence packages. |
 | [supply-chain](skills/supply-chain.md) | sonnet | Dependency confusion attacks, typosquatting, lockfile injection, manifest confusion, and SLSA provenance verification. |
 | [api-security](skills/api-security.md) | sonnet | Rate limiting, input sanitization, CORS, CSP generation, and security headers middleware for Express, Fastify, and Next.js. |
+| [defense-in-depth](skills/defense-in-depth.md) | sonnet | Multi-layer validation strategy — add validation at every layer data passes through (entry, business logic, environment, instrumentation). |
 
 ## Connections
 

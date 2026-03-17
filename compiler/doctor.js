@@ -28,14 +28,18 @@ export async function runDoctor({ outputRoot, adapter, config, runeRoot }) {
     healthy: true,
   };
 
-  // Check 1: Config exists
+  // Check 1: Config exists (skip in CI / source-only mode)
   const configPath = path.join(outputRoot, 'rune.config.json');
   if (existsSync(configPath)) {
     results.checks.push({ name: 'Config file', status: 'pass' });
-  } else {
+  } else if (config && Object.keys(config).length > 0) {
+    // Config was passed but file doesn't exist on disk — real problem
     results.checks.push({ name: 'Config file', status: 'fail', detail: 'rune.config.json not found' });
     results.errors.push('rune.config.json not found. Run `rune init` first.');
     results.healthy = false;
+  } else {
+    // No config at all (CI / fresh clone) — skip gracefully
+    results.checks.push({ name: 'Config file', status: 'skip', detail: 'No config — source-only mode' });
   }
 
   // Check 2: Output directory exists
@@ -177,7 +181,7 @@ export function formatDoctorResults(results) {
   lines.push(`\n  Platform: ${results.platform}`);
 
   for (const check of results.checks) {
-    const icon = check.status === 'pass' ? '✓' : check.status === 'warn' ? '!' : '✗';
+    const icon = check.status === 'pass' ? '✓' : check.status === 'warn' ? '!' : check.status === 'skip' ? '–' : '✗';
     const detail = check.detail ? ` (${check.detail})` : '';
     lines.push(`  [${icon}] ${check.name}${detail}`);
   }

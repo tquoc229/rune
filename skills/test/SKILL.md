@@ -3,7 +3,7 @@ name: test
 description: "TDD test writer. Writes failing tests FIRST (red), then verifies they pass after implementation (green). Covers unit, integration, and e2e tests."
 metadata:
   author: runedev
-  version: "0.3.0"
+  version: "0.4.0"
   layer: L2
   model: sonnet
   group: development
@@ -271,6 +271,36 @@ If you catch yourself with ANY of these, delete implementation code and restart 
 - [existing test that broke, with error details]
 ```
 
+## Testing Anti-Patterns (Gate Functions)
+
+Before writing tests, check yourself against these 5 anti-patterns. Each has a **gate function** — a question you MUST answer before proceeding.
+
+### Anti-Pattern 1: Testing Mock Behavior
+Asserting that a mock exists (e.g., `testId="sidebar-mock"`) instead of testing real component behavior. You're proving the mock works, not the code.
+**Gate**: "Am I testing real component behavior or just mock existence?" → If mock existence: STOP. Rewrite to test real behavior.
+
+### Anti-Pattern 2: Test-Only Methods in Production
+Adding `destroy()`, `reset()`, or `__testSetup()` methods to production classes that are ONLY called from test files. Production code should not know tests exist.
+**Gate**: "Is this method only called by tests?" → If yes: STOP. Move to test utilities or test helper file, not production class.
+
+### Anti-Pattern 3: Mocking Without Understanding Side Effects
+Mocking a function without first understanding ALL its side effects. The real function may write config files, update caches, or emit events that downstream code depends on.
+**Gate**: Before mocking, STOP and answer: "What side effects does the REAL function have? Does this test depend on any of those?" → Run with real implementation first, observe what happens, THEN add minimal mocking.
+
+### Anti-Pattern 4: Incomplete Mocks
+Partial mock missing fields that downstream code consumes. Your test passes because it only checks the fields you mocked, but production code reads fields your mock doesn't have → runtime crash.
+**Iron Rule**: Mock the COMPLETE data structure as it exists in reality, not just fields your immediate test uses. Examine actual API response / real data shape before writing mock.
+
+### Anti-Pattern 5: Mock Setup Longer Than Test Logic
+If mock setup is 30 lines and the actual test assertion is 3 lines, the test is testing infrastructure, not behavior. This is a code smell that indicates wrong abstraction level.
+**Gate**: "Is my mock setup longer than my test logic?" → If yes: test at a higher level (integration) or extract mock factories.
+
+**Red flags — any of these means STOP and rethink:**
+- Mock setup longer than test logic
+- `*-mock` test IDs in assertions
+- Methods only called in test files
+- Can't explain in one sentence why a mock is needed
+
 ## Sharp Edges
 
 Known failure modes for this skill. Check these before declaring done.
@@ -279,10 +309,13 @@ Known failure modes for this skill. Check these before declaring done.
 |---|---|---|
 | Tests passing before implementation exists | CRITICAL | RED Gate: rewrite stricter tests — passing without code = not testing real behavior |
 | Skipping the RED phase (not confirming FAIL) | HIGH | Run tests, confirm FAIL output before calling cook/fix to implement |
-| Testing mock behavior instead of real code | HIGH | Constraint 4: test what the real code does, not what the mock returns |
+| Testing mock behavior instead of real code | HIGH | Anti-Pattern 1 gate: "Am I testing real behavior or mock existence?" |
+| Mocking without understanding side effects | HIGH | Anti-Pattern 3 gate: run with real impl first, observe side effects, THEN mock minimally |
+| Incomplete mocks missing downstream fields | HIGH | Anti-Pattern 4 iron rule: mock COMPLETE data structure, not just fields your test checks |
 | Coverage below 80% without filling gaps | MEDIUM | Coverage Gate: identify uncovered lines and write additional tests |
 | Introducing a new test framework instead of using existing one | MEDIUM | Constraint 6: detect framework first, use project's existing one always |
 | Modifying source files to make tests work | HIGH | Role boundary: test writes test files ONLY — source changes go to rune:fix |
+| Test-only methods leaking into production code | MEDIUM | Anti-Pattern 2 gate: if method only called by tests → move to test utilities |
 
 ## Done When
 

@@ -3,7 +3,7 @@ name: debug
 description: Root cause analysis for bugs and unexpected behavior. Traces errors through code, uses structured reasoning, and hands off to fix when cause is found. Core of the debug↔fix mesh.
 metadata:
   author: runedev
-  version: "0.4.0"
+  version: "0.5.0"
   layer: L2
   model: sonnet
   group: development
@@ -88,6 +88,21 @@ When the error appears deep in execution (wrong directory, wrong path, wrong val
 5. **Fix at source** — the root cause is where invalid data is CREATED, not where it CRASHES
 
 Rule: NEVER fix where the error appears. Trace back to where invalid data originated.
+
+#### Instrumentation Tip: Use console.error, Not Loggers
+When adding diagnostic instrumentation, use `console.error()` (stderr) — NOT application loggers. Loggers are configured to suppress output based on log level or environment (e.g., `LOG_LEVEL=warn` silences `logger.debug`). `console.error` bypasses all logger configuration and writes directly to stderr. This is counterintuitive but critical — the one time you NEED debug output is exactly when loggers are configured to hide it.
+
+#### Defense-in-Depth (After Root Cause Found)
+When the root cause is invalid data flowing through multiple layers, recommend fixing at ALL layers — not just the source:
+
+| Layer | Purpose | Example |
+|-------|---------|---------|
+| Layer 1: Entry Point | Reject invalid input at API/CLI boundary | Validate not empty, exists, correct type |
+| Layer 2: Business Logic | Ensure data makes sense for the operation | Validate required params before processing |
+| Layer 3: Environment Guards | Prevent dangerous operations in specific contexts | Refuse destructive ops outside allowed dirs |
+| Layer 4: Debug Instrumentation | Capture context for forensics | Stack trace logging before dangerous operations |
+
+All four layers are necessary. During testing, each layer catches bugs the others miss — different code paths bypass single validation points. When recommending a fix via `rune:fix`, explicitly call out which layers need validation added.
 
 #### Multi-Component Instrumentation (for systems with 3+ layers)
 

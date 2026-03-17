@@ -199,8 +199,18 @@ async function cmdDoctor(projectRoot, args) {
   const config = await readConfig(projectRoot);
 
   if (!config) {
-    log('  ✗ No rune.config.json found. Run `rune init` first.');
-    process.exit(1);
+    // No config = CI or fresh clone. Run source-only checks (split packs).
+    log('');
+    log('  ℹ No rune.config.json found — running source-only checks.');
+    const results = await runDoctor({
+      outputRoot: projectRoot,
+      adapter: getAdapter('claude'),
+      config: {},
+      runeRoot: RUNE_ROOT,
+    });
+    log(formatDoctorResults(results));
+    if (!results.healthy) process.exit(1);
+    return;
   }
 
   const platform = args.platform || config.platform;
