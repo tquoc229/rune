@@ -3,7 +3,7 @@ name: plan
 description: Create structured implementation plans from requirements. Produces master plan + phase files for enterprise-scale project management. Master plan = overview (<80 lines). Phase files = execution detail (<150 lines each). Each session handles 1 phase. Uses opus for deep reasoning.
 metadata:
   author: runedev
-  version: "0.6.0"
+  version: "0.7.0"
   layer: L2
   model: opus
   group: creation
@@ -101,10 +101,25 @@ High-level multi-feature planning — organize features into milestones.
 - `skill-forge` (L2): plan structure for new skill
 - User: `/rune plan` direct invocation
 
-## Cross-Hub Connections
+## Data Flow
 
-- `plan` ↔ `brainstorm` — bidirectional: plan asks brainstorm for options, brainstorm asks plan for structure
-- `ba` → `plan` — BA produces Requirements Document, plan consumes it as primary input
+### Feeds Into →
+
+- `cook` (L1): master plan + phase files → cook's Phase 2-4 execution roadmap
+- `team` (L1): task decomposition + wave grouping → team's parallel workstream dispatch
+- `fix` (L2): phase file tasks → fix's implementation targets
+- `test` (L2): phase file test tasks → test's RED phase targets
+
+### Fed By ←
+
+- `ba` (L2): Requirements Document → plan's primary input (locked decisions, user stories)
+- `scout` (L2): codebase analysis → plan's convention/pattern awareness
+- `neural-memory` (external): past architectural decisions → plan's precedent context
+
+### Feedback Loops ↻
+
+- `plan` ↔ `brainstorm`: plan requests options when multiple approaches exist → brainstorm generates options → plan selects and structures the chosen approach
+- `plan` ↔ `cook`: cook discovers plan gaps during implementation → plan updates phase files → cook resumes with corrected tasks
 
 ## Executable Steps (Implementation Mode)
 
@@ -610,6 +625,17 @@ Max 200 lines. Self-contained — coder needs ONLY this file.
 | Plan ignores locked Decisions from BA | CRITICAL | Decision Compliance section cross-checks requirements.md — locked decisions are non-negotiable |
 | Complex feature missing Workflow Registry — components planned but never wired | HIGH | Step 4.5: 4-view registry catches orphaned components, unphased workflows, and missing state transitions before phase files are written |
 
+## Self-Validation
+
+```
+SELF-VALIDATION (run before presenting plan to user):
+- [ ] Every task has a clear file path — no "update relevant files" vagueness
+- [ ] Wave dependencies are acyclic — no task depends on a task in the same or later wave
+- [ ] Every code-producing phase has at least one test task
+- [ ] Phase files have ALL Amateur-Proof sections (data flow, code contracts, failure scenarios, rejection criteria)
+- [ ] Locked decisions from BA are reflected in plan — none contradicted or ignored
+```
+
 ## Done When
 
 - Complexity classified (inline vs master + phase files)
@@ -623,6 +649,7 @@ Max 200 lines. Self-contained — coder needs ONLY this file.
 - Every code-producing phase has test tasks
 - Master plan presented to user with "Awaiting Approval"
 - User has explicitly approved
+- Self-Validation: all checks passed
 
 ## Cost Profile
 

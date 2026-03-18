@@ -4,7 +4,7 @@ description: "Validates agent claims against evidence trail. Catches 'done' with
 user-invocable: false
 metadata:
   author: runedev
-  version: "1.4.0"
+  version: "1.5.0"
   layer: L3
   model: haiku
   group: validation
@@ -72,6 +72,24 @@ Grep for stub patterns in new/modified files:
 If ANY stub detected:
 - Add synthetic claim: "implemented [filename]" → CONTRADICTED (file is a stub)
 - This catches agents that create files but don't implement them
+
+### Step 1c — Self-Validation Check
+
+If the skill that just ran has a `## Self-Validation` section, extract its checklist and treat each item as an implicit claim:
+
+```
+For each Self-Validation check in the skill's SKILL.md:
+  1. Read the check (e.g., "at least one assertion per test")
+  2. Look for evidence in tool output that this check was satisfied
+  3. If evidence found → add as CONFIRMED claim
+  4. If no evidence → add as UNCONFIRMED claim ("Self-Validation: [check] — no evidence")
+```
+
+Why: Self-Validation catches domain-specific quality issues that generic claim matching (Step 2) cannot detect. A test skill knows "no assertions = useless test" but completion-gate doesn't — unless the skill's Self-Validation tells it to check.
+
+<HARD-GATE>
+If a skill has Self-Validation and ANY check is UNCONFIRMED or CONTRADICTED → overall verdict cannot be CONFIRMED, even if all explicit claims pass.
+</HARD-GATE>
 
 ### Step 2 — Match Evidence
 
@@ -216,6 +234,7 @@ Completion Gate Report with status (CONFIRMED/UNCONFIRMED/CONTRADICTED), claim v
 | Phase complete but E2E flow broken — missing link in the chain | MEDIUM | Step 4.5 E2E flow trace: entry → logic → data → response must all be connected |
 | Rubber-stamping — all CONFIRMED without scrutiny | HIGH | Default-FAIL mindset: actively seek 3-5 issues. Zero issues = red flag, apply skeptic sweep on weakest 2 claims |
 | Partial completion claimed as full — 80% done but "implemented" | HIGH | Adversarial checklist: check for partial completion, scope mismatch, evidence-claim alignment |
+| Self-Validation skipped — skill has checks but gate ignores them | HIGH | Step 1c: extract Self-Validation from skill's SKILL.md, treat each as implicit claim. Missing = UNCONFIRMED |
 
 ## Done When
 

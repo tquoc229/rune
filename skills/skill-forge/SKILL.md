@@ -3,7 +3,7 @@ name: skill-forge
 description: Use when creating new Rune skills, editing existing skills, or verifying skill quality before deployment. Applies TDD discipline to skill authoring — test before write, verify before ship.
 metadata:
   author: runedev
-  version: "1.2.0"
+  version: "1.3.0"
   layer: L2
   model: opus
   group: creation
@@ -97,11 +97,13 @@ Follow `docs/SKILL-TEMPLATE.md` format. Required sections:
 | Frontmatter | YES | Name, description, metadata |
 | Purpose | YES | One paragraph, ecosystem role |
 | Triggers | YES | When to invoke |
-| Calls / Called By | YES | Mesh connections |
+| Calls / Called By | YES | Mesh connections (control flow) |
+| Data Flow | YES | Feeds Into / Fed By / Feedback Loops (data flow) |
 | Workflow | YES | Step-by-step execution |
 | Output Format | YES | Structured, parseable output |
 | Constraints | YES | 3-7 MUST/MUST NOT rules |
 | Sharp Edges | YES | Known failure modes |
+| Self-Validation | YES | Domain-specific QA checklist (per-skill, not centralized) |
 | Done When | YES | Verifiable completion criteria |
 | Cost Profile | YES | Token estimate |
 | Mesh Gates | L1/L2 only | Progression guards |
@@ -277,7 +279,9 @@ Wire the skill into the mesh:
 1. **Update `docs/ARCHITECTURE.md`** — add to correct layer/group table
 2. **Update `CLAUDE.md`** — increment skill count, add to layer list
 3. **Add mesh connections** — update SKILL.md of skills that should call/be called by this one
-4. **Verify no conflicts** — new skill's output format compatible with consumers?
+4. **Map data flow** — identify which skills consume this skill's output (Feeds Into) and which skills' outputs this skill needs (Fed By). Look for feedback loops where two skills refine each other's work
+5. **Write Self-Validation** — 3-5 domain-specific checks unique to this skill's output. Ask: "What quality issues can ONLY this skill catch?"
+6. **Verify no conflicts** — new skill's output format compatible with consumers?
 
 ### Phase 7 — SHIP
 
@@ -302,6 +306,8 @@ git commit -m "feat: add [skill-name] — [one-line purpose]"
 - [ ] At least one observed failure documented
 - [ ] Anti-rationalization table from real test failures
 - [ ] Mesh connections bidirectional (calls AND called-by both updated)
+- [ ] Data flow mapped (Feeds Into / Fed By / Feedback Loops)
+- [ ] Self-Validation has 3-5 domain-specific checks (not generic)
 - [ ] Output format is structured and parseable by other skills
 
 **Architecture:**
@@ -368,6 +374,8 @@ Techniques:
 ### Mesh Impact
 - New connections: [count] ([list of skills])
 - Bidirectional check: PASS | FAIL
+- Data flow mapped: [count] feeds-into, [count] fed-by, [count] feedback loops
+- Self-Validation: [count] domain-specific checks written
 ```
 
 ## Constraints
@@ -393,6 +401,9 @@ Techniques:
 | Code blocks in SKILL.md bloat every invocation | HIGH | WHY vs HOW split: SKILL.md ≤10-line code blocks, extract rest to references/ |
 | Writing skill without TDD (no observed failures first) | CRITICAL | Skill TDD: RED (run scenario WITHOUT skill → document failures) → GREEN (write skill targeting failures) → REFACTOR (find bypasses → add blocks) |
 | Description leaks workflow → agent skips full content | HIGH | CSO Discipline: description = triggers only. Test: can you execute from description alone? If yes, it leaks too much |
+| Self-Validation copies completion-gate checks | HIGH | Self-Validation is DOMAIN-specific: "assertions per test", "dependency ordering". NOT generic: "tests pass", "build succeeds" — those belong to completion-gate |
+| Data Flow confused with Calls | MEDIUM | Calls = runtime invocation (skill A calls skill B). Feeds Into = artifact persistence (skill A writes .rune/X.md, skill B reads it later). If it's a direct function call → Calls. If it's via files/context → Data Flow |
+| Feedback Loop missing one direction | MEDIUM | Every Feedback Loop ↻ must document BOTH directions: what A sends to B AND what B sends back to A. One-way = Feeds Into, not a loop |
 
 ## Done When
 

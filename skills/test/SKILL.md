@@ -3,7 +3,7 @@ name: test
 description: "TDD test writer. Writes failing tests FIRST (red), then verifies they pass after implementation (green). Covers unit, integration, and e2e tests."
 metadata:
   author: runedev
-  version: "0.5.0"
+  version: "0.6.0"
   layer: L2
   model: sonnet
   group: development
@@ -261,6 +261,25 @@ For non-trivial features (3+ test files or 20+ test cases), create a `TEST.md` i
 - `browser-pilot` (L3): Phase 4 — e2e and visual testing for UI flows
 - `debug` (L2): Phase 5 — when existing test regresses unexpectedly
 
+## Data Flow
+
+### Feeds Into →
+
+- `cook` (L1): test results (pass/fail/coverage) → cook's Phase 5 quality gate evidence
+- `completion-gate` (L3): test runner stdout → evidence for "tests pass" claims
+- `fix` (L2): failing test output → fix's target (what to make green)
+
+### Fed By ←
+
+- `plan` (L2): phase file test tasks → test's RED phase targets (what to test)
+- `review` (L2): untested edge cases found during review → new test targets
+- `fix` (L2): implemented code → test's GREEN phase verification target
+
+### Feedback Loops ↻
+
+- `test` ↔ `fix`: test writes failing tests (RED) → fix implements to pass → test verifies (GREEN) → if new failures emerge, loop continues
+- `test` ↔ `debug`: test discovers regression → debug diagnoses root cause → test writes regression test to prevent recurrence
+
 ## Anti-Rationalization Table
 
 | Excuse | Reality |
@@ -375,6 +394,17 @@ Known failure modes for this skill. Check these before declaring done.
 | Modifying source files to make tests work | HIGH | Role boundary: test writes test files ONLY — source changes go to rune:fix |
 | Test-only methods leaking into production code | MEDIUM | Anti-Pattern 2 gate: if method only called by tests → move to test utilities |
 
+## Self-Validation
+
+```
+SELF-VALIDATION (run before emitting Test Report):
+- [ ] Every test file has at least one assertion — no empty test bodies
+- [ ] RED phase output shows actual failures (not "0 tests") — tests were real, not stubs
+- [ ] No test modifies source code — test files only, source changes belong to fix
+- [ ] Test names describe behavior, not implementation ("should reject expired token" not "test function X")
+- [ ] No mocks of the thing being tested — only mock external dependencies
+```
+
 ## Done When
 
 - Test framework detected from project config files
@@ -383,6 +413,7 @@ Known failure modes for this skill. Check these before declaring done.
 - After implementation: all tests PASS (GREEN phase — actual pass output shown)
 - Coverage ≥80% verified via verification
 - Test Report emitted with framework, test count, RED/GREEN status, and coverage
+- Self-Validation: all checks passed
 
 ## Cost Profile
 

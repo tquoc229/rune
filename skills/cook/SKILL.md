@@ -5,7 +5,7 @@ context: fork
 agent: general-purpose
 metadata:
   author: runedev
-  version: "1.0.0"
+  version: "1.1.0"
   layer: L1
   model: sonnet
   group: orchestrator
@@ -727,6 +727,26 @@ Do NOT ask user until repair budget is spent.
 - `worktree` (L3): Phase 4 — worktree isolation for parallel implementation
 - L4 extension packs: Phase 1.5 — domain-specific patterns when stack matches (see Phase 1.5 mapping table)
 
+## Data Flow
+
+### Feeds Into →
+
+- `journal` (L3): architectural decisions made during cook → ADR entries for future sessions
+- `session-bridge` (L3): cook's context (plan, decisions, progress) → .rune/ state files for next session
+- `neural-memory` (external): learnings from this cook run → persistent cross-session memory
+
+### Fed By ←
+
+- `ba` (L2): Requirements Document → cook's Phase 1 UNDERSTAND input
+- `plan` (L2): master plan + phase files → cook's Phase 2-4 execution roadmap
+- `session-bridge` (L3): .rune/.continue-here.md → cook's Phase 0 resume context
+- `neural-memory` (external): past project decisions → cook's Phase 0 context recall
+
+### Feedback Loops ↻
+
+- `cook` ↔ `debug`: cook encounters bug during Phase 4 → debug diagnoses → cook resumes with fix. Debug may discover the plan is wrong → cook triggers Approach Pivot
+- `cook` ↔ `test`: cook writes tests in Phase 3 (RED), implements in Phase 4 (GREEN), runs tests again → failures loop back to Phase 4 fix
+
 ## Analysis Paralysis Guard
 
 <HARD-GATE>
@@ -855,6 +875,17 @@ Known failure modes for this skill. Check these before declaring done.
 | Same tool+args+result called 3+ times without progress | HIGH | Hash-Based Loop Detection: 3x warn, 5x force stop. Only same-input-AND-same-output counts — retries with different results are fine |
 | Ignoring mid-run user messages during autonomous execution | HIGH | Two-stage intent classification: keyword fast-path for simple signals, context classification for longer messages. Never queue user messages — process immediately |
 
+## Self-Validation
+
+```
+SELF-VALIDATION (run before emitting Cook Report):
+- [ ] Every phase in Phase Skip Rules was either executed or explicitly skipped with reason
+- [ ] Plan approval gate was not bypassed — user said "go" (check conversation history)
+- [ ] No Phase 4 code was written before Phase 3 tests (TDD order preserved)
+- [ ] All Phase 5 quality gates (preflight, sentinel, review) ran — not just claimed
+- [ ] Cook Report contains actual commit hash, not placeholder
+```
+
 ## Done When
 
 - All applicable phases complete per Phase Skip Rules (determined before starting)
@@ -865,6 +896,7 @@ Known failure modes for this skill. Check these before declaring done.
 - Commit created with semantic message
 - Cook Report emitted with commit hash and phase list
 - Session state saved to .rune/ via session-bridge
+- Self-Validation: all checks passed
 
 ## Cost Profile
 
