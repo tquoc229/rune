@@ -390,30 +390,43 @@ claude plugin install rune</code></pre>
             <li>All future Pro packs included</li>
           </ul>
           <button class="btn btn-pro" style="width:100%" onclick="openPayment('rune-pro')">Get Rune Pro &mdash; $49</button>
-          <p class="pricing-note">Pay once, use forever. No subscriptions.</p>
+          <p class="pricing-note pricing-guarantee">&#128176; 14-Day Money-Back Guarantee &mdash; no questions asked</p>
         </div>
 
         <!-- BUSINESS -->
         <div class="pricing-card pricing-biz">
           <div class="pricing-tier">
-            <span class="pricing-badge pricing-badge-biz">Enterprise</span>
+            <span class="pricing-badge pricing-badge-best">&#9733; BEST VALUE</span>
             <h3>Rune Business</h3>
             <div class="pricing-price">$149<span class="pricing-period"> lifetime</span></div>
           </div>
-          <p class="pricing-desc">Full department coverage for companies that need AI assistance across every business function.</p>
-          <p class="pricing-who">Best for: scaling companies, agencies, enterprises with cross-department AI workflows.</p>
+          <p class="pricing-desc">Full department coverage &mdash; every business function, one purchase.</p>
+
+          <!-- What's Included breakdown -->
+          <div class="includes-breakdown">
+            <p class="includes-label">What&rsquo;s Included:</p>
+            <div class="includes-box includes-box-pro">
+              <strong>Rune Pro</strong> <span class="includes-value">$49 value</span>
+              <ul>
+                <li>Product Management, Sales, Data Science, Support</li>
+                <li>Business memory layer + MCP connectors</li>
+              </ul>
+            </div>
+            <div class="includes-box includes-box-biz">
+              <strong>Rune Business</strong> <span class="includes-value">$100 value</span>
+              <ul>
+                <li>Finance Ops, Legal &amp; Compliance, HR &amp; Recruiting</li>
+                <li>Enterprise Search + Priority support</li>
+              </ul>
+            </div>
+          </div>
+
           <ul class="pricing-features">
-            <li><strong>Everything in Pro, plus:</strong></li>
-            <li>Finance Ops &mdash; invoicing, expense tracking, financial reporting</li>
-            <li>Legal &amp; Compliance &mdash; contract review, policy drafting, audit prep</li>
-            <li>HR &amp; Recruiting &mdash; job descriptions, candidate screening, onboarding</li>
-            <li>Enterprise Search &mdash; cross-system knowledge retrieval</li>
-            <li>Skill Forge included &mdash; build private skills (free in core, enhanced for teams)</li>
-            <li>Priority support &mdash; direct access to maintainers</li>
-            <li>All future Business packs included</li>
+            <li>All future Pro + Business packs included</li>
+            <li>Lifetime access &mdash; no subscriptions ever</li>
           </ul>
           <button class="btn btn-biz" style="width:100%" onclick="openPayment('rune-biz')">Get Rune Business &mdash; $149</button>
-          <p class="pricing-note">Pay once, use forever. No subscriptions.</p>
+          <p class="pricing-note pricing-guarantee">&#128176; 14-Day Money-Back Guarantee &mdash; no questions asked</p>
         </div>
       </div>
 
@@ -603,7 +616,7 @@ claude plugin install rune</code></pre>
         <p class="pay-subtitle">Choose your payment method</p>
         <div class="pay-options">
           <button class="pay-option" onclick="showVNPayment()">
-            <span class="pay-option-flag">&#127483;&#127475;</span>
+            <img src="https://flagcdn.com/w40/vn.png" width="32" height="21" alt="VN" style="border-radius:3px" />
             <div class="pay-option-info">
               <strong>Vietnam</strong>
               <span>Bank Transfer (VietQR)</span>
@@ -675,24 +688,25 @@ claude plugin install rune</code></pre>
     (function initTheme() {
       const toggle = document.getElementById('theme-toggle');
       const stored = localStorage.getItem('rune-theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = stored || (prefersDark ? 'dark' : 'dark'); // default dark
+      const theme = stored || 'light'; // default light (warm cream)
 
-      if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        toggle.innerHTML = '&#9790;'; // moon
+      } else {
         toggle.innerHTML = '&#9728;'; // sun
       }
 
       toggle.addEventListener('click', () => {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        if (isLight) {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
           document.documentElement.removeAttribute('data-theme');
-          toggle.innerHTML = '&#9790;'; // moon
-          localStorage.setItem('rune-theme', 'dark');
-        } else {
-          document.documentElement.setAttribute('data-theme', 'light');
           toggle.innerHTML = '&#9728;'; // sun
           localStorage.setItem('rune-theme', 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          toggle.innerHTML = '&#9790;'; // moon
+          localStorage.setItem('rune-theme', 'dark');
         }
       });
     })();

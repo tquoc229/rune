@@ -43,9 +43,9 @@
         const dy = nodes[i].y - nodes[j].y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < maxDist) {
-          const alpha = (1 - dist / maxDist) * 0.35;
-          ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
-          ctx.lineWidth = 0.6;
+          const alpha = (1 - dist / maxDist) * 0.5;
+          ctx.strokeStyle = `rgba(60, 85, 50, ${alpha})`;
+          ctx.lineWidth = 0.8;
           ctx.beginPath();
           ctx.moveTo(nodes[i].x, nodes[i].y);
           ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -56,7 +56,7 @@
 
     // draw nodes
     for (const n of nodes) {
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.6)';
+      ctx.fillStyle = 'rgba(60, 85, 50, 0.7)';
       ctx.beginPath();
       ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
       ctx.fill();
@@ -317,31 +317,58 @@ function startPolling(github) {
 (function initPromoCountdown() {
   if (!isPromoActive()) return;
 
-  // Update pricing cards with promo prices
+  // Add "50% OFF" ribbon to Pro and Business cards
+  ['.pricing-pro', '.pricing-biz'].forEach(sel => {
+    const card = document.querySelector(sel);
+    if (!card) return;
+    const ribbon = document.createElement('div');
+    ribbon.className = 'promo-ribbon';
+    ribbon.textContent = '50% OFF';
+    card.appendChild(ribbon);
+  });
+
+  // Update pricing cards with promo prices + save badge
   const proCard = document.querySelector('.pricing-pro .pricing-price');
   const bizCard = document.querySelector('.pricing-biz .pricing-price');
-  if (proCard) proCard.innerHTML = '<s style="opacity:.4;font-size:.6em">$49</s> $25<span class="pricing-period"> lifetime</span>';
-  if (bizCard) bizCard.innerHTML = '<s style="opacity:.4;font-size:.6em">$149</s> $75<span class="pricing-period"> lifetime</span>';
+  if (proCard) proCard.innerHTML = '<s style="opacity:.35;font-size:.55em">$49</s> $25<span class="pricing-period"> lifetime</span><br><span class="promo-save">Save $24</span>';
+  if (bizCard) bizCard.innerHTML = '<s style="opacity:.35;font-size:.55em">$149</s> $75<span class="pricing-period"> lifetime</span><br><span class="promo-save">Save $74</span>';
+
+  // Update "What's Included" values in Business card
+  document.querySelectorAll('.includes-value').forEach(el => {
+    if (el.textContent.includes('$49')) el.innerHTML = '<s>$49</s> $25 value';
+    if (el.textContent.includes('$100')) el.innerHTML = '<s>$100</s> $50 value';
+  });
 
   // Update buttons
   const proBtn = document.querySelector('.pricing-pro .btn-pro');
   const bizBtn = document.querySelector('.pricing-biz .btn-biz');
-  if (proBtn) proBtn.innerHTML = 'Get Rune Pro &mdash; <s>$49</s> $25';
-  if (bizBtn) bizBtn.innerHTML = 'Get Rune Business &mdash; <s>$149</s> $75';
+  if (proBtn) proBtn.innerHTML = 'Get Rune Pro &mdash; <s style="opacity:.6">$49</s>&nbsp;$25';
+  if (bizBtn) bizBtn.innerHTML = 'Get Rune Business &mdash; <s style="opacity:.6">$149</s>&nbsp;$75';
 
   // Update comparison table
   document.querySelectorAll('.table-price').forEach(el => {
-    if (el.textContent.includes('$49')) el.innerHTML = '<s>$49</s> $25';
-    if (el.textContent.includes('$149')) el.innerHTML = '<s>$149</s> $75';
+    if (el.textContent.includes('$49')) el.innerHTML = '<s style="opacity:.5">$49</s>&nbsp;$25';
+    if (el.textContent.includes('$149')) el.innerHTML = '<s style="opacity:.5">$149</s>&nbsp;$75';
   });
 
-  // Create countdown banner
+  // Create countdown banner (sticky bottom)
   const banner = document.createElement('div');
   banner.id = 'promo-banner';
-  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#059669,#10b981);color:#fff;text-align:center;padding:12px 16px;font:600 14px/1.4 "Space Grotesk",sans-serif;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 -2px 12px rgba(0,0,0,.2)';
-  banner.innerHTML = '<span>Launch Week: 50% OFF all paid packs</span><span id="promo-timer" style="font-family:JetBrains Mono,monospace;font-weight:700;background:rgba(0,0,0,.2);padding:4px 10px;border-radius:6px"></span><a href="#pricing" style="color:#fff;text-decoration:underline;font-weight:700">Get it now</a>';
+  banner.style.cssText = `
+    position:fixed;bottom:0;left:0;right:0;z-index:9999;
+    background:linear-gradient(135deg,#4a6843 0%,#5b7852 50%,#7a9e6e 100%);
+    color:#fff;text-align:center;padding:10px 16px;
+    font:600 14px/1.4 "Space Grotesk",sans-serif;
+    display:flex;align-items:center;justify-content:center;gap:16px;
+    box-shadow:0 -4px 20px rgba(91,120,82,.2);
+  `.replace(/\n\s+/g, '');
+  banner.innerHTML = ''
+    + '<span style="font-size:18px">&#9889;</span>'
+    + '<span><strong>Launch Week</strong> &mdash; 50% OFF all paid packs</span>'
+    + '<span id="promo-timer" style="font-family:JetBrains Mono,monospace;font-weight:700;background:rgba(0,0,0,.2);padding:5px 12px;border-radius:6px;letter-spacing:.5px;min-width:150px"></span>'
+    + '<a href="#pricing" style="background:#f5f0e8;color:#4a6843;text-decoration:none;font-weight:700;padding:6px 16px;border-radius:6px;font-size:13px;white-space:nowrap">Grab the deal &rarr;</a>';
   document.body.appendChild(banner);
-  document.body.style.paddingBottom = '48px';
+  document.body.style.paddingBottom = '52px';
 
   function tick() {
     const diff = PROMO.endsAt - Date.now();
@@ -350,7 +377,8 @@ function startPolling(github) {
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
-    document.getElementById('promo-timer').textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+    const timer = document.getElementById('promo-timer');
+    if (timer) timer.textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
   }
   tick();
   setInterval(tick, 1000);
