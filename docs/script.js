@@ -134,29 +134,57 @@
 
 // ─── Payment Flow ───
 const PAY_API = 'https://pay.theio.vn';
-const BANK_ID = 'vpbank';
+const BANK_ID = 'tpbank';
 const BANK_ACCOUNT = '04162263666';
-const ACCOUNT_NAME = 'NGUYEN CONG';
+const ACCOUNT_NAME = 'NGUYEN VIET NAM';
+
+// Launch promo: 50% off for 7 days
+const PROMO = {
+  discount: 0.5,
+  endsAt: new Date('2026-03-25T23:59:59+07:00').getTime(),
+};
+
+function isPromoActive() {
+  return Date.now() < PROMO.endsAt;
+}
+
+function fmtVND(n) {
+  return n.toLocaleString('vi-VN') + ' VND';
+}
 
 const PRODUCT_INFO = {
   'rune-pro': {
     title: 'Get Rune Pro', titleShort: 'Rune Pro',
-    priceVN: '1,190,000 VND', priceIntl: '$49 USD',
-    amountLabel: '1,190,000 VND (~$49 USD)',
+    basePrice: 1190000, baseIntl: 49,
     btnClass: 'btn-pro',
   },
   'rune-biz': {
     title: 'Get Rune Business', titleShort: 'Rune Business',
-    priceVN: '3,590,000 VND', priceIntl: '$149 USD',
-    amountLabel: '3,590,000 VND (~$149 USD)',
+    basePrice: 3590000, baseIntl: 149,
     btnClass: 'btn-biz',
   },
 };
 
+function getProductPricing(key) {
+  const info = PRODUCT_INFO[key];
+  const promo = isPromoActive();
+  const price = promo ? Math.round(info.basePrice * (1 - PROMO.discount)) : info.basePrice;
+  const intl = promo ? Math.round(info.baseIntl * (1 - PROMO.discount)) : info.baseIntl;
+  return {
+    ...info,
+    priceVN: fmtVND(price),
+    priceIntl: '$' + intl + ' USD',
+    amountLabel: fmtVND(price) + ' (~$' + intl + ' USD)',
+    promo,
+    originalVN: fmtVND(info.basePrice),
+    originalIntl: '$' + info.baseIntl + ' USD',
+  };
+}
+
 let payState = { product: null, orderCode: null, pollTimer: null };
 
 function openPayment(product) {
-  const info = PRODUCT_INFO[product];
+  const info = getProductPricing(product);
   if (!info) return;
 
   payState = { product, orderCode: null, pollTimer: null };
@@ -164,8 +192,17 @@ function openPayment(product) {
   document.getElementById('pay-title').textContent = info.title;
   document.getElementById('pay-title-2').textContent = info.title;
   document.getElementById('pay-amount-2').textContent = info.amountLabel;
-  document.getElementById('pay-price-vn').textContent = info.priceVN;
-  document.getElementById('pay-price-intl').textContent = info.priceIntl;
+
+  const vnPriceEl = document.getElementById('pay-price-vn');
+  const intlPriceEl = document.getElementById('pay-price-intl');
+  if (info.promo) {
+    vnPriceEl.innerHTML = '<s style="opacity:.5">' + info.originalVN + '</s> ' + info.priceVN;
+    intlPriceEl.innerHTML = '<s style="opacity:.5">' + info.originalIntl + '</s> ' + info.priceIntl;
+  } else {
+    vnPriceEl.textContent = info.priceVN;
+    intlPriceEl.textContent = info.priceIntl;
+  }
+
   document.getElementById('pay-github').value = '';
   document.getElementById('pay-email').value = '';
   document.getElementById('pay-error').hidden = true;
@@ -275,3 +312,46 @@ function startPolling(github) {
     }
   }, 5000);
 }
+
+// ─── Promo Countdown ───
+(function initPromoCountdown() {
+  if (!isPromoActive()) return;
+
+  // Update pricing cards with promo prices
+  const proCard = document.querySelector('.pricing-pro .pricing-price');
+  const bizCard = document.querySelector('.pricing-biz .pricing-price');
+  if (proCard) proCard.innerHTML = '<s style="opacity:.4;font-size:.6em">$49</s> $25<span class="pricing-period"> lifetime</span>';
+  if (bizCard) bizCard.innerHTML = '<s style="opacity:.4;font-size:.6em">$149</s> $75<span class="pricing-period"> lifetime</span>';
+
+  // Update buttons
+  const proBtn = document.querySelector('.pricing-pro .btn-pro');
+  const bizBtn = document.querySelector('.pricing-biz .btn-biz');
+  if (proBtn) proBtn.innerHTML = 'Get Rune Pro &mdash; <s>$49</s> $25';
+  if (bizBtn) bizBtn.innerHTML = 'Get Rune Business &mdash; <s>$149</s> $75';
+
+  // Update comparison table
+  document.querySelectorAll('.table-price').forEach(el => {
+    if (el.textContent.includes('$49')) el.innerHTML = '<s>$49</s> $25';
+    if (el.textContent.includes('$149')) el.innerHTML = '<s>$149</s> $75';
+  });
+
+  // Create countdown banner
+  const banner = document.createElement('div');
+  banner.id = 'promo-banner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#059669,#10b981);color:#fff;text-align:center;padding:12px 16px;font:600 14px/1.4 "Space Grotesk",sans-serif;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 -2px 12px rgba(0,0,0,.2)';
+  banner.innerHTML = '<span>Launch Week: 50% OFF all paid packs</span><span id="promo-timer" style="font-family:JetBrains Mono,monospace;font-weight:700;background:rgba(0,0,0,.2);padding:4px 10px;border-radius:6px"></span><a href="#pricing" style="color:#fff;text-decoration:underline;font-weight:700">Get it now</a>';
+  document.body.appendChild(banner);
+  document.body.style.paddingBottom = '48px';
+
+  function tick() {
+    const diff = PROMO.endsAt - Date.now();
+    if (diff <= 0) { banner.remove(); document.body.style.paddingBottom = ''; return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('promo-timer').textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
