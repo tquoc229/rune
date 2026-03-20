@@ -257,11 +257,14 @@ export async function buildAll({ runeRoot, outputRoot, adapter, disabledSkills =
     await writeFile(path.join(srcDir, 'index.ts'), entryPoint, 'utf-8');
     stats.files.push('src/index.ts');
 
-    // Write README.md for ClawHub listing page
+    // Write README.md + SKILL.md for ClawHub listing page
     if (adapter.generateReadme) {
       const readme = adapter.generateReadme(parsedSkills, pluginJson);
       await writeFile(path.join(openclawRoot, 'README.md'), readme, 'utf-8');
       stats.files.push('README.md');
+      // SKILL.md required by clawhub publish
+      await writeFile(path.join(openclawRoot, 'SKILL.md'), readme, 'utf-8');
+      stats.files.push('SKILL.md');
     }
   }
 
