@@ -101,6 +101,69 @@ export default {
   },
 
   /**
+   * Generate README.md for ClawHub listing page
+   *
+   * @param {object[]} skills - parsed skill objects
+   * @param {object} pluginJson - Rune's .claude-plugin/plugin.json
+   * @returns {string} markdown content
+   */
+  generateReadme(skills, pluginJson) {
+    const version = pluginJson.version || '0.0.0';
+    const l1 = skills.filter((s) => s.layer === 'L1').map((s) => s.name);
+    const l2 = skills.filter((s) => s.layer === 'L2').map((s) => s.name);
+    const l3 = skills.filter((s) => s.layer === 'L3').map((s) => s.name);
+
+    return `# Rune
+
+> Less skills. Deeper connections.
+
+**${skills.length}-skill mesh** for AI coding assistants — 5-layer architecture, 200+ connections, 14 extension packs.
+
+## Install
+
+\`\`\`
+clawhub install rune-kit
+\`\`\`
+
+Or via npm:
+
+\`\`\`
+npx @rune-kit/rune init
+\`\`\`
+
+## What is Rune?
+
+Rune is a **mesh** — skills call each other bidirectionally, forming resilient workflows. If one skill fails, the mesh routes around it.
+
+Use \`rune:cook\` for any code task, \`rune:team\` for parallel work, \`rune:launch\` for deploy, \`rune:rescue\` for legacy code.
+
+## Architecture
+
+| Layer | Role | Skills |
+|-------|------|--------|
+| L0 | Router | skill-router |
+| L1 | Orchestrators | ${l1.join(', ')} |
+| L2 | Workflow Hubs | ${l2.join(', ')} |
+| L3 | Utilities | ${l3.join(', ')} |
+| L4 | Extensions | 14 domain packs |
+
+## Extension Packs (L4)
+
+ui · backend · devops · mobile · security · trading · saas · ecommerce · ai-ml · gamedev · content · analytics · chrome-ext · zalo
+
+## Links
+
+- **Source**: [github.com/rune-kit/rune](https://github.com/rune-kit/rune)
+- **Docs**: [rune-kit.github.io/rune](https://rune-kit.github.io/rune)
+- **Guides**: [rune-kit.github.io/rune/guides](https://rune-kit.github.io/rune/guides)
+
+## License
+
+MIT — v${version}
+`;
+  },
+
+  /**
    * Generate src/index.ts entry point with register(api) pattern
    *
    * @param {object[]} skills - parsed skill objects

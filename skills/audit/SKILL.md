@@ -32,6 +32,7 @@ Comprehensive project health audit across 8 dimensions (7 project + 1 mesh analy
 - `journal` (L3): record audit date, overall score, and verdict
 - `constraint-check` (L3): audit HARD-GATE compliance across project skills
 - `sast` (L3): Phase 2 — deep static analysis (Semgrep, Bandit, ESLint security rules)
+- `retro` (L2): Phase 6 — engineering velocity and health dimension (rune:retro)
 
 ## Called By (inbound)
 
