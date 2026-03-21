@@ -3,7 +3,7 @@ name: sentinel
 description: Automated security gatekeeper. Blocks unsafe code before commit — secret scanning, OWASP top 10, dependency audit, permission checks. A GATE, not a suggestion.
 metadata:
   author: runedev
-  version: "0.5.0"
+  version: "0.6.0"
   layer: L2
   model: sonnet
   group: quality
@@ -71,38 +71,14 @@ CSRF:           form without CSRF token, missing SameSite cookie
 ## Executable Steps
 
 ### Step 1 — Secret Scan (Gitleaks-Enhanced)
+<MUST-READ path="references/secret-patterns.md" trigger="Before scanning for secrets — load extended gitleaks patterns and git history scan procedure"/>
 
-Use `Grep` to search all changed files (or full codebase if no diff available) for secret patterns.
-
-**1a. Current file scan:**
-- Patterns: `sk-`, `AKIA`, `ghp_`, `ghs_`, `-----BEGIN`, `password\s*=\s*["']`, `secret\s*=\s*["']`, `api_key\s*=\s*["']`, `token\s*=\s*["']`
-- Also scan for `.env` file contents committed directly (grep for lines matching `KEY=value` outside `.env` files)
-- Flag any string with entropy > 4.5 and length > 40 characters as HIGH_ENTROPY candidate
-
-**1b. Extended gitleaks patterns:**
-```
-SLACK_TOKEN:      xox[bpors]-[0-9a-zA-Z]{10,}
-STRIPE_KEY:       [sr]k_(live|test)_[0-9a-zA-Z]{24,}
-SENDGRID:         SG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}
-TWILIO:           SK[0-9a-fA-F]{32}
-FIREBASE:         AIza[0-9A-Za-z_-]{35}
-PRIVATE_KEY:      -----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----
-JWT:              eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}
-GENERIC_API_KEY:  (?i)(apikey|api_key|api-key)\s*[:=]\s*["'][A-Za-z0-9_-]{16,}
-```
-
-**1c. Git history scan (first run only):**
-If this is the first sentinel scan on this repo (no `.rune/sentinel-baseline.md` exists):
-```
-Bash: git log --all --diff-filter=A -- '*.env*' '*.key' '*.pem' '*.p12' '*credentials*' '*secret*'
-→ If any results: WARN — historical secret files detected. Recommend BFG/git-filter-repo cleanup.
-```
-
-For subsequent runs, scan only the current diff (incremental).
+Use `Grep` on all changed files for core patterns: `sk-`, `AKIA`, `ghp_`, `ghs_`, `-----BEGIN`, `password\s*=\s*["']`, `secret\s*=\s*["']`, `api_key\s*=\s*["']`, `token\s*=\s*["']`. Also flag high-entropy strings (>40 chars, entropy >4.5) and `.env` contents committed directly. Load reference for extended patterns (Slack, Stripe, SendGrid, etc.) and git history scan procedure.
 
 Any match = **BLOCK**. Do not proceed to later steps if BLOCK findings exist — report immediately.
 
 ### Step 2 — Dependency Audit
+
 Use `Bash` to run the appropriate audit command for the detected package manager:
 - npm/pnpm/yarn: `npm audit --json` (parse JSON, extract critical + high severity)
 - Python: `pip-audit --format=json` (if installed) or `safety check`
@@ -114,175 +90,37 @@ Critical CVE (CVSS >= 9.0) = **BLOCK**. High CVE (CVSS 7.0–8.9) = **WARN**. Me
 If audit tool is not installed, log **INFO**: "audit tool not found, skipping dependency check" — do NOT block on missing tooling.
 
 ### Step 3 — OWASP Check
-Use `Read` to scan changed files for:
-- **SQL Injection**: string concatenation or interpolation inside SQL query strings (e.g., `"SELECT * FROM users WHERE id = " + userId`, f-strings with SQL). Flag = **BLOCK**
-- **XSS**: `innerHTML =`, `dangerouslySetInnerHTML`, `document.write(` with non-static content. Flag = **BLOCK**
-- **CSRF**: HTML `<form>` elements without CSRF token fields; `Set-Cookie` headers without `SameSite`. Flag = **WARN**
-- **Missing input validation**: new route handlers or API endpoints that directly pass `req.body` / `request.json()` to a database call without a validation schema. Flag = **WARN**
+<MUST-READ path="references/owasp-patterns.md" trigger="Before scanning for OWASP issues — load code examples and detection signals for SQL injection, XSS, CSRF, input validation"/>
 
-**SQL Injection examples:**
-```python
-# BAD — string interpolation in SQL → BLOCK
-cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
-query = "SELECT * FROM users WHERE name = '" + name + "'"
-# GOOD — parameterized query
-cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-```
-
-**XSS examples:**
-```typescript
-// BAD — renders raw user content → BLOCK
-element.innerHTML = userComment;
-<div dangerouslySetInnerHTML={{ __html: userInput }} />
-// GOOD — safe alternatives
-element.textContent = userComment;
-<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(userInput) }} />
-```
-
-**Input validation examples:**
-```typescript
-// BAD — raw body to DB → WARN
-app.post('/users', async (req, res) => { await db.users.create(req.body); });
-// GOOD — validate at boundary
-app.post('/users', async (req, res) => {
-  const validated = CreateUserSchema.parse(req.body);
-  await db.users.create(validated);
-});
-```
+Scan changed files for SQL injection (string concat/interpolation in SQL) → **BLOCK**, XSS (`innerHTML`, `dangerouslySetInnerHTML` without sanitization) → **BLOCK**, CSRF (forms without token, cookies without SameSite) → **WARN**, and missing input validation (raw `req.body` → DB) → **WARN**. Load reference for code examples and precise detection signals.
 
 ### Step 3.5 — Skill Content Security Guard
+<MUST-READ path="references/skill-content-guard.md" trigger="When sentinel is invoked on any SKILL.md, PACK.md, or .rune/*.md file — load all 28 category rules before scanning"/>
 
-When sentinel is invoked on any `SKILL.md` or skill-adjacent content file (e.g., `extensions/*/PACK.md`, `.rune/*.md`, agent files), scan for **28 compiled regex rule categories** BEFORE the content is written or committed. First-match-wins — report the category that triggered and halt.
+When invoked on `SKILL.md`, `extensions/*/PACK.md`, `.rune/*.md`, or agent files, scan content for 28 compiled regex rule categories BEFORE it is written or committed. First-match-wins — report the triggering category and halt. Safe exceptions apply for documented anti-pattern examples and scripts in `scripts/` directory. Invoke from `skill-forge` Phase 7 pre-ship check and from any hook writing to skill files.
 
-**Category groups (apply to SKILL.md content):**
-
-| Category | Pattern Examples | Severity |
-|----------|-----------------|----------|
-| Destructive ops | `rm -rf /`, `fork bomb: :(){ :|:& };:` | BLOCK |
-| Code injection | `eval(`, `exec(`, `curl \| bash`, `wget \| sh` | BLOCK |
-| Credential theft | `cat ~/.ssh`, `env \| grep`, `printenv` in instructions | BLOCK |
-| Path traversal | `../../../`, `%2e%2e%2f` in tool call instructions | BLOCK |
-| SQL injection | `' OR '1'='1`, `; DROP TABLE` in prompt text | BLOCK |
-| Privilege escalation | `sudo`, `chmod 777`, `chown root` in agent instructions | WARN |
-| Prompt injection | `Ignore previous instructions`, `Disregard your`, `New system prompt:` | BLOCK |
-| Jailbreak attempts | `DAN mode`, `developer mode`, `unrestricted AI` | BLOCK |
-
-**When to apply**: Any time skill content is WRITTEN or EDITED (not just committed). Invoke from `skill-forge` Phase 7 pre-ship check and from any hook writing to `SKILL.md` files.
-
-**Safe exceptions**: These appear legitimately in skill examples and MUST NOT trigger:
-- Code blocks demonstrating BAD patterns (preceded by `# BAD`, `// BAD`, or inside backtick fences labeled as anti-patterns)
-- Actual shell scripts in `scripts/` directory (functional code, not agent instructions)
-
-> Source: nextlevelbuilder/goclaw (832★) — 28 compiled regex rules on skill content pre-write.
+> Source: nextlevelbuilder/goclaw (832★)
 
 ### Step 4 — Destructive Command Guard
+<MUST-READ path="references/destructive-commands.md" trigger="Before static scan and before including real-time command guard in report — load pattern table and safe exceptions"/>
 
-Scan for destructive operations in code AND detect real-time destructive commands during agent execution.
+**4a. Static scan** — Grep changed files for: `rm -rf /`, `DROP TABLE`, `DELETE FROM` without `WHERE`, `TRUNCATE`, file ops on absolute paths outside project root (`/etc/`, `/usr/`, `C:\Windows\`), production DB connection strings. Destructive command on production path = **BLOCK**. Suspicious path = **WARN**.
 
-**4a. Static scan** — Use `Grep` to scan changed files for:
-- Destructive shell commands in scripts: `rm -rf /`, `DROP TABLE`, `DELETE FROM` without `WHERE`, `TRUNCATE`
-- File operations using absolute paths outside the project root (e.g., `/etc/`, `/usr/`, `C:\Windows\`)
-- Direct production database connection strings (e.g., `prod`, `production` in DB host names)
-
-Destructive command on production path = **BLOCK**. Suspicious path = **WARN**.
-
-**4b. Real-Time Command Guard** (advisory for agent workflows)
-
-When sentinel is invoked by `cook` or `fix`, include this destructive command pattern table in the report. Any skill executing Bash commands SHOULD check against these patterns before execution:
-
-| Pattern | Risk | Action |
-|---------|------|--------|
-| `rm -rf` / `rm -r` / `rm --recursive` | Recursive delete | WARN — confirm target is expected |
-| `DROP TABLE` / `DROP DATABASE` / `TRUNCATE` | Data loss | BLOCK — require explicit confirmation |
-| `git push --force` / `git push -f` | History rewrite | WARN — confirm branch is correct |
-| `git reset --hard` | Uncommitted work loss | WARN — verify no unsaved changes |
-| `git checkout .` / `git restore .` | Working tree wipe | WARN — verify intent |
-| `kubectl delete` / `docker system prune` | Production impact | BLOCK — require namespace/context confirmation |
-| `chmod 777` / `chmod -R 777` | Permission escalation | WARN — almost never correct |
-
-**Safe exceptions** (do NOT warn):
-- `rm -rf node_modules`, `.next`, `dist`, `__pycache__`, `.cache`, `build`, `.turbo`, `coverage`, `target`
-- `git push --force-with-lease` (safe force push)
-- `docker rm` on explicitly named test containers
-
-**Composable modes** (future — advisory only for now):
-- **Careful mode**: warn before any destructive command (all patterns above)
-- **Freeze mode**: restrict file edits to a specific directory (scope lock)
-- **Guard mode**: careful + freeze combined
-
-> Source: garrytan/gstack v0.9.0 (careful/freeze/guard skills) — real-time command safety, composable with edit scope lock.
+**4b. Real-Time Command Guard** — When invoked by `cook` or `fix`, include the destructive command pattern table in the report. Load reference for the full pattern table and safe exceptions (e.g., `rm -rf node_modules` is NOT destructive).
 
 ### Step 4.5 — Framework-Specific Security Patterns
+<MUST-READ path="references/framework-patterns.md" trigger="When framework files are detected in the changed set — load patterns for the specific framework(s) found"/>
 
-Apply only if the framework is detected in changed files:
-
-**Django** (detect: `django` in requirements or imports)
-- `DEBUG = True` in non-development settings → **BLOCK**
-- Missing `permission_classes` on ModelViewSet → **WARN**
-- CSRF middleware removed from `MIDDLEWARE` list → **BLOCK**
-
-**React / Next.js** (detect: `.tsx` / `.jsx` files)
-- JWT stored in `localStorage` instead of `httpOnly` cookie → **WARN**
-- `dangerouslySetInnerHTML` without `DOMPurify.sanitize()` → **BLOCK**
-
-**Node.js / Express / Fastify** (detect: `express`, `fastify` imports)
-- CORS set to `origin: '*'` on authenticated endpoints → **WARN**
-- Missing `helmet` middleware for HTTP security headers → **WARN**
-
-**Python** (detect: `.py` files)
-- `pickle.loads(user_input)` or `eval(user_expression)` → **BLOCK**
-- `yaml.load()` without `Loader` arg (uses unsafe loader) → **WARN**
+Apply only when the framework is detected in changed files. Covers Django (DEBUG=True, missing permissions, CSRF removal), React/Next.js (localStorage JWT, dangerouslySetInnerHTML), Node.js/Express/Fastify (wildcard CORS, missing helmet), Python (pickle.loads, yaml.load unsafe). Load reference for the complete check table per framework.
 
 ### Step 4.6 — Config Protection (3-Layer Defense)
+<MUST-READ path="references/config-protection.md" trigger="When config files (.eslintrc, tsconfig.json, ruff.toml, CI/CD files) appear in the diff — load detection patterns for all 3 layers"/>
 
-Detect attempts to weaken code quality or security configurations. Agents and developers sometimes disable checks to "fix" build errors — sentinel blocks this.
-
-**Layer 1 — Linter/Formatter Config Drift:**
-Scan diff for changes to these files:
-- `.eslintrc*`, `eslint.config.*`, `biome.json` → rules disabled or removed
-- `tsconfig.json` → `strict` changed to `false`, `any` allowed, `skipLibCheck` added
-- `ruff.toml`, `.ruff.toml`, `pyproject.toml [tool.ruff]` → rules removed from select list
-- `.prettierrc*` → significant format changes without team discussion
-
-Detection patterns:
-```
-# ESLint rule disable
-"off" or 0 in rule config (compare with previous)
-// eslint-disable added to >3 lines in same file
-
-# TypeScript strictness weakening
-"strict": false
-"noImplicitAny": false
-"skipLibCheck": true (added, not already present)
-
-# Ruff rule removal
-select = [...] with fewer rules than before
-```
-
-Match = **WARN** with message: "Config change weakens code quality — verify this is intentional."
-
-**Layer 2 — Security Middleware Removal:**
-Scan for removal of security-critical middleware/imports:
-- `helmet` removed from Express/Fastify middleware chain
-- `csrf` middleware removed or commented out
-- `cors` configuration changed to `origin: '*'`
-- `SecurityMiddleware` removed from Django `MIDDLEWARE`
-- `@csrf_protect` decorator removed from Django views
-
-Match = **BLOCK** with message: "Security middleware removed — this must be explicitly justified."
-
-**Layer 3 — CI/CD Safety Bypass:**
-Scan for weakening of CI/CD safety checks:
-- `--no-verify` added to git commands in scripts
-- `--force` added to deployment scripts
-- Test steps removed or marked `continue-on-error: true`
-- Coverage thresholds lowered
-
-Match = **WARN** with message: "CI safety check weakened — verify this is intentional."
+Detect attempts to weaken code quality or security configurations across three layers: (1) Linter/formatter config drift (ESLint rules disabled, `"strict": false` in tsconfig, ruff rules removed) → **WARN**; (2) Security middleware removal (helmet, csrf, CORS wildcard) → **BLOCK**; (3) CI/CD safety bypass (`--no-verify`, `continue-on-error`, lowered coverage thresholds) → **WARN**.
 
 ### Step 4.7 — Agentic Security Scan
 
-If `.rune/` directory exists in the project, invoke `integrity-check` (L3) to scan for adversarial content:
+If `.rune/` directory exists, invoke `rune:integrity-check` (L3) on all `.rune/*.md` files and any state files in the commit diff.
 
 ```
 REQUIRED SUB-SKILL: rune:integrity-check
@@ -290,24 +128,23 @@ REQUIRED SUB-SKILL: rune:integrity-check
 → Capture: status (CLEAN | SUSPICIOUS | TAINTED), findings list.
 ```
 
-Map integrity-check results to sentinel severity:
-- `TAINTED` → sentinel **BLOCK** (adversarial content in state files)
-- `SUSPICIOUS` → sentinel **WARN** (review recommended before commit)
-- `CLEAN` → no additional findings
-
-If `.rune/` directory does not exist, skip this step (log INFO: "no .rune/ state files, agentic scan skipped").
+Map results: `TAINTED` → **BLOCK**, `SUSPICIOUS` → **WARN**, `CLEAN` → no findings.
+If `.rune/` does not exist, skip and log INFO: "no .rune/ state files, agentic scan skipped".
 
 ### Step 5 — Report
-Aggregate all findings. Apply the verdict rule:
-- Any **BLOCK** finding → overall status = **BLOCK**. List all BLOCK items first.
+
+Aggregate all findings across all steps. Verdict rules:
+- Any **BLOCK** → overall status = **BLOCK**. List all BLOCK items first.
 - No BLOCK but any **WARN** → overall status = **WARN**. Developer must acknowledge each WARN.
 - Only **INFO** → overall status = **PASS**.
 
-If status is BLOCK, output the report and STOP. Do not hand off to commit. The calling skill (`cook`, `preflight`, `deploy`) must halt until the developer fixes all BLOCK findings and re-runs sentinel.
+<HARD-GATE>
+If status is BLOCK, output the report and STOP. The calling skill (cook, preflight, deploy) must halt until all BLOCK findings are fixed and sentinel re-runs.
+</HARD-GATE>
 
 ### WARN Acknowledgment Protocol
 
-WARN findings do not block the commit but MUST be explicitly acknowledged:
+WARN findings do not block but MUST be explicitly acknowledged:
 
 ```
 For each WARN item, developer must respond with one of:
@@ -319,77 +156,10 @@ Silent continuation past WARN = VIOLATION.
 The calling skill (cook) must present WARNs and wait for acknowledgment.
 ```
 
-### Step 5 — Domain Hook Templates
+### Step 5b — Domain Hook Generation (on request)
+<MUST-READ path="references/domain-hooks.md" trigger="When a pack or skill requests domain-specific pre-commit hook generation"/>
 
-Generate domain-specific pre-commit hook scripts when requested. These hooks run as git pre-commit hooks and enforce domain-level quality gates BEFORE code enters the repository.
-
-#### Hook Architecture
-
-```
-hooks/
-├── pre-commit-security.sh      # Always — secret scan, OWASP basics (generated by sentinel)
-├── pre-commit-<domain>.sh      # Domain-specific — generated on request
-└── validate-<domain>.py        # Complex validation scripts (Python for portability)
-```
-
-#### Hook Generation Rules
-
-1. **Exit 0 if no relevant files staged** — prevents false positives when committing unrelated changes
-2. **ERRORS block commit** (exit 1) — critical violations that must be fixed
-3. **WARNINGS alert but allow** (exit 0 with stderr) — non-critical issues the developer should review
-4. **List specific files and line numbers** — actionable output, not vague warnings
-5. **Fast execution** (<5 seconds) — hooks that slow down commits get disabled by developers
-
-#### Domain Hook Template
-
-```bash
-#!/usr/bin/env bash
-# Pre-commit hook: <domain> quality gate
-# Generated by rune:sentinel — do not edit manually
-
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
-DOMAIN_FILES=$(echo "$STAGED_FILES" | grep -E '<file-pattern>')
-
-# Exit early if no relevant files staged
-if [ -z "$DOMAIN_FILES" ]; then
-  exit 0
-fi
-
-ERRORS=0
-WARNINGS=0
-
-for file in $DOMAIN_FILES; do
-  # ERROR checks (block commit)
-  # <domain-specific-error-patterns>
-
-  # WARNING checks (alert only)
-  # <domain-specific-warning-patterns>
-done
-
-if [ $ERRORS -gt 0 ]; then
-  echo "❌ $ERRORS error(s) found — commit blocked. Fix before retrying."
-  exit 1
-fi
-
-if [ $WARNINGS -gt 0 ]; then
-  echo "⚠️  $WARNINGS warning(s) found — review recommended."
-fi
-
-exit 0
-```
-
-#### Built-in Domain Hook Patterns
-
-| Domain | File Pattern | ERROR Checks | WARNING Checks |
-|--------|-------------|-------------|----------------|
-| **Schema/API** | `*.graphql`, `*.proto`, `openapi.*` | Breaking field removal, type changes | Deprecated field usage |
-| **Database** | `migrations/*.sql`, `*.migration.*` | DROP TABLE without backup, DELETE without WHERE | Missing rollback script |
-| **Config** | `*.env*`, `*config*`, `tsconfig*` | Secrets in config, strict mode disabled | New env var without docs |
-| **Dependencies** | `package.json`, `requirements.txt`, `Cargo.toml` | Known vulnerable version pinned | Major version bump without changelog |
-| **Legal/Compliance** | `docs/policies/*`, `PRIVACY*`, `TERMS*` | Placeholder text ([Company Name], [Date]) | Review date >12 months old |
-| **Financial** | `**/invoice*`, `**/billing*`, `**/payment*` | Hardcoded prices/rates, missing decimal precision | Currency without locale formatting |
-
-When a pack or skill requests domain hooks (via `sentinel` integration), generate the appropriate hook script using the template above, customized with domain-specific patterns.
+Generate domain-specific pre-commit hook scripts when requested. Load reference for hook architecture, the standard template, and built-in domain patterns (Schema/API, Database, Config, Dependencies, Legal, Financial). Hooks must exit 0 when no relevant files are staged and must run in <5 seconds.
 
 ## Output Format
 
