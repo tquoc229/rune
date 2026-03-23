@@ -24,8 +24,8 @@ These principles guide every roadmap decision:
 |-------|-------|--------|
 | L0 Router | 1 | ✅ Complete |
 | L1 Orchestrators | 5 | ✅ Complete |
-| L2 Workflow Hubs | 27 | ✅ Complete |
-| L3 Utilities | 25 | ✅ Complete |
+| L2 Workflow Hubs | 28 | ✅ Complete |
+| L3 Utilities | 26 | ✅ Complete |
 | L4 Free Extension Packs | 14 | ✅ Complete |
 | Pro Packs (4) | 25 skills | ✅ Shipped |
 | Business Packs (4) | 26 skills | ✅ Shipped |
@@ -39,7 +39,7 @@ These principles guide every roadmap decision:
 **Theme:** Test coverage, health score, and Business tier depth. No new skills until the foundation earns it.
 
 ### Health & Quality
-- ⬚ Skill validation tests — parse all 58 SKILL.md, assert required frontmatter fields (name, layer, model, connections)
+- ⬚ Skill validation tests — parse all 59 SKILL.md, assert required frontmatter fields (name, layer, model, connections)
 - ⬚ E2E build pipeline tests — build each platform adapter, assert output structure matches spec
 - ⬚ Pack validation tests — doctor checks for all 143 split skill files, no dangling refs
 - ⬚ Coverage reporting with c8 — enforce 80%+ threshold on CI

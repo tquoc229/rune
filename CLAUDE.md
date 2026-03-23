@@ -68,7 +68,7 @@ rune/
 
 ## Current Wave
 
-59 core skills built (v2.2.1 — "The Missing Pieces").
+59 core skills built (v2.3.0 — "Solid Ground").
 
 ### L0 Router (1)
 skill-router — meta-enforcement layer, routes every action through the correct skill
@@ -104,7 +104,7 @@ Pro packs use same PACK.md format, install into `extensions/pro-*/`.
 
 ### Rune Business (Enterprise Extensions — separate private repo)
 Repository: https://github.com/rune-kit/rune-business (private)
-@rune-pro/finance (✅), @rune-pro/legal (✅), @rune-pro/hr (✅), @rune-pro/enterprise-search (✅)
+@rune-business/finance (✅), @rune-business/legal (✅), @rune-business/hr (✅), @rune-business/enterprise-search (✅)
 4 packs, 26 skills. $149 lifetime.
 
 ## Full Spec
