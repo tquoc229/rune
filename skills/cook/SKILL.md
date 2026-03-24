@@ -164,6 +164,7 @@ Auto-trigger: no `.rune/` dir (first run) OR build just failed with env-looking 
 2. Mark Phase 1 as `in_progress`
 3. **BA gate**: Feature Request / Integration / Greenfield → invoke `rune:ba`. Task > 50 words or business terms (users, revenue, workflow) → invoke `rune:ba`. Bug Fix / simple Refactor → skip. BA produces `.rune/features/<name>/requirements.md` for Phase 2.
 4. **Decision enforcement**: `Glob` for `.rune/decisions.md`; if exists, `Read` + extract constraints for Phase 2. Plan MUST NOT contradict active decisions without explicit user override.
+4b. **Contract enforcement**: If `.rune/contract.md` was loaded in Phase 0.6, list applicable contract sections for this task (e.g., `contract.security` for auth work, `contract.data` for database changes). These rules constrain Phase 2 planning and Phase 4 implementation.
 
 ### Phase 1 Step 3.5 — Clarification Gate
 
@@ -216,6 +217,16 @@ After scout completes, check if the detected tech stack or task description matc
 1. Use `Glob` to check for `.rune/plan-*.md` files
 2. If a master plan exists matching the current task: Read it → find first `⬚ Pending` or `🔄 Active` phase → load ONLY that phase file → announce "Resuming from Phase N" → skip to Phase 4
 3. If no master plan exists → proceed to Phase 1 as normal
+
+**Step 0.6 — Contract Load**: Use `Glob` to check for `.rune/contract.md`. If it exists:
+1. `Read` the contract file and parse each `## section` as a named rule set
+2. Hold contract rules in context — they apply as **hard gates** throughout all phases
+3. Any code change that violates a contract rule → STOP and inform user before proceeding
+4. If no contract exists → proceed normally (contract is optional)
+
+<HARD-GATE>
+Contract violations are NON-NEGOTIABLE. If `.rune/contract.md` exists and a planned or implemented change violates any rule, cook MUST stop and report the violation. The user must explicitly override ("ignore contract rule X") to proceed.
+</HARD-GATE>
 
 **This enables multi-session workflows**: Opus plans once → each session picks up the next phase.
 

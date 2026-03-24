@@ -44,6 +44,7 @@ project/
     ├── progress.md        # Empty, ready for session-bridge
     ├── session-log.md     # Empty, ready for session-bridge
     ├── instincts.md       # Empty, ready for session-bridge instinct learning
+    ├── contract.md        # Project invariants enforced by cook/sentinel
     └── DEVELOPER-GUIDE.md # Human-readable onboarding for new developers
 ```
 
@@ -105,6 +106,11 @@ Use `Write` to create each file:
 - `.rune/progress.md` — create with header `# Progress Log` and one placeholder entry
 - `.rune/session-log.md` — create with header `# Session Log` and current date as first entry
 - `.rune/instincts.md` — create with header `# Project Instincts` and a description: "Learned trigger→action patterns. Managed by session-bridge. See session-bridge SKILL.md Step 5.7 for format."
+- `.rune/contract.md` — generate a starter contract based on the detected tech stack:
+  - Copy structure from `docs/CONTRACT-TEMPLATE.md`
+  - Customize rules based on Step 2 findings (e.g., Python → add `no bare except`, Node.js → add `no console.log`, SQL database → add parameterized queries rule)
+  - Remove sections that don't apply (e.g., `contract.operations` for a library with no deployed service)
+  - The contract is a starting point — tell the user to review and customize it
 
 ### Step 5.5 — Load Existing Instincts
 
