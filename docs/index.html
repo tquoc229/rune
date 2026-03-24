@@ -23,6 +23,7 @@
         <span class="logo-rune">&#9670;</span> Rune
       </a>
       <div class="nav-links">
+        <a href="#benchmark">Benchmark</a>
         <a href="#architecture">Architecture</a>
         <a href="#workflows">Workflows</a>
         <a href="guides/">Guides</a>
@@ -99,6 +100,88 @@ D &harr; E &harr; F
           <p>Resilient. Skills route around failures automatically.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- BENCHMARK -->
+  <section class="section section-dark" id="benchmark">
+    <div class="container">
+      <h2>Measured, Not Claimed</h2>
+      <p class="section-sub">10 coding tasks. Claude Code with Rune vs without. Same model, same prompts, real metrics.</p>
+
+      <div class="bench-headline">
+        <div class="bench-stat">
+          <span class="bench-delta bench-good">&darr; 16%</span>
+          <span class="bench-label">Tokens</span>
+        </div>
+        <div class="bench-stat">
+          <span class="bench-delta bench-good">&darr; 6%</span>
+          <span class="bench-label">Cost</span>
+        </div>
+        <div class="bench-stat">
+          <span class="bench-delta bench-good">&darr; 9%</span>
+          <span class="bench-label">Duration</span>
+        </div>
+        <div class="bench-stat">
+          <span class="bench-delta bench-neutral">9/10 = 9/10</span>
+          <span class="bench-label">Correctness</span>
+        </div>
+      </div>
+
+      <h3 style="margin-top:2.5rem;margin-bottom:1rem;text-align:center;color:var(--text-secondary);">Where discipline matters most</h3>
+      <div class="bench-table-wrap">
+        <table class="bench-table">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Difficulty</th>
+              <th>Tokens</th>
+              <th>Cost</th>
+              <th>Duration</th>
+              <th>Tools</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Refactor 450-line component</td>
+              <td><span class="diff-badge diff-med">Medium</span></td>
+              <td class="bench-good">-62%</td>
+              <td class="bench-good">-17%</td>
+              <td class="bench-good">-32%</td>
+              <td class="bench-good">-27%</td>
+            </tr>
+            <tr>
+              <td>Full feature (auth + API + tests)</td>
+              <td><span class="diff-badge diff-complex">Complex</span></td>
+              <td class="bench-good">-36%</td>
+              <td class="bench-good">-29%</td>
+              <td class="bench-good">-31%</td>
+              <td class="bench-good">-27%</td>
+            </tr>
+            <tr>
+              <td>Add Zod validation</td>
+              <td><span class="diff-badge diff-easy">Easy</span></td>
+              <td class="bench-good">-9%</td>
+              <td class="bench-good">-28%</td>
+              <td class="bench-good">-32%</td>
+              <td class="bench-neutral">0%</td>
+            </tr>
+            <tr>
+              <td>Dark mode across 6 components</td>
+              <td><span class="diff-badge diff-hard">Hard</span></td>
+              <td class="bench-neutral">~0%</td>
+              <td class="bench-bad">+10%</td>
+              <td class="bench-good">-7%</td>
+              <td class="bench-good">-6%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="text-align:center;margin-top:1.5rem;color:var(--text-muted);font-size:0.85rem;">
+        Rune doesn't make Claude smarter &mdash; Claude already knows how to code.<br>
+        Rune makes Claude <strong style="color:var(--accent);">disciplined</strong>. The more complex the task, the more discipline matters.
+      </p>
     </div>
   </section>
 
