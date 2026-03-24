@@ -91,6 +91,37 @@ Before intent classification, categorize the request into one of 5 types. This d
 
 **Escape hatch**: If request is clearly trivial (< 5 LOC change, single-line fix, user says "just do it"), classify as CODE_CHANGE but cook activates Fast Mode automatically.
 
+### Step 0.3 — Skill Discovery (`/rune list`)
+
+If user says `/rune list`, "what skills do I have", "show all skills", "available skills", or "what can rune do":
+
+1. **Scan installed skills**: `Glob` for `skills/*/skill.md` (core L0-L3) and `extensions/*/PACK.md` (L4 packs)
+2. **Scan paid extensions**: `Glob` for `extensions/pro-*/PACK.md` (Pro/Business packs — only present if purchased)
+3. **Output the catalog** grouped by tier:
+
+```
+## Rune Skills Catalog
+
+### Core Skills (L0-L3) — Always Available
+| Skill | Layer | Description |
+|-------|-------|-------------|
+(list each skill from skills/*/skill.md — read name + description from frontmatter)
+
+### Extension Packs (L4) — Domain Knowledge
+| Pack | Skills | Trigger |
+|------|--------|---------|
+(list each pack from extensions/*/PACK.md — read name + skill count + trigger commands)
+
+### Pro/Business Packs (if installed)
+| Pack | Skills | Trigger |
+|------|--------|---------|
+(list each pack from extensions/pro-*/PACK.md)
+```
+
+4. **Tip line at bottom**: "Use `/rune <pack> <skill>` to invoke any skill directly. Use `/rune <pack>` for the full pack workflow."
+
+**Filtering**: `/rune list <query>` filters by name or domain keyword (e.g., `/rune list finance` shows only finance-related skills).
+
 ### Step 0.5 — STOP before responding
 
 Before generating ANY response (including clarifying questions), the agent MUST:
@@ -305,6 +336,27 @@ At the end of a skill's workflow, skill-router MAY suggest a **complementary ski
 | `test` (GREEN) | `preflight` | Tests pass — check for edge cases and completeness |
 | `review` (issues found) | `fix` | Issues identified — apply fixes |
 | `sentinel` (findings) | `fix` | Security issues — remediate |
+
+#### L4 Extension Auto-Suggest (Domain Context Detection)
+
+When routing a request through L1/L2 skills, skill-router SHOULD detect domain signals and suggest relevant L4 packs the user may not know they have:
+
+| Domain Signal Detected | Suggest Pack | Announcement |
+|----------------------|-------------|--------------|
+| Financial terms (budget, revenue, P&L, runway, cash flow) | `@rune-pro/finance` | "You have `@rune-pro/finance` with 7 specialized skills. Use `/rune finance` to access." |
+| Legal terms (contract, NDA, compliance, GDPR, IP) | `@rune-pro/legal` | "You have `@rune-pro/legal` with 6 specialized skills. Use `/rune legal` to access." |
+| HR terms (hiring, JD, interview, onboarding, comp) | `@rune-pro/hr` | "You have `@rune-pro/hr` with 7 specialized skills. Use `/rune hr` to access." |
+| Product terms (PRD, roadmap, KPI, release notes) | `@rune-pro/product` | "You have `@rune-pro/product` with 6 specialized skills. Use `/rune product` to access." |
+| Sales terms (pipeline, outreach, prospecting) | `@rune-pro/sales` | "You have `@rune-pro/sales` with 6 specialized skills. Use `/rune sales` to access." |
+| Data terms (SQL, dashboard, statistical, ML eval) | `@rune-pro/data-science` | "You have `@rune-pro/data-science` with 7 specialized skills. Use `/rune data` to access." |
+| Support terms (ticket, KB, escalation, SLA) | `@rune-pro/support` | "You have `@rune-pro/support` with 6 specialized skills. Use `/rune support` to access." |
+| Search terms (enterprise search, knowledge graph) | `@rune-pro/enterprise-search` | "You have `@rune-pro/enterprise-search` with 6 specialized skills. Use `/rune search` to access." |
+
+**Auto-suggest rules:**
+1. Only suggest if the pack's PACK.md **exists on disk** — `Glob` for the pack path first. If not installed, skip silently.
+2. Suggest ONCE per session per pack — do not repeat after user has seen the suggestion.
+3. Format: brief inline note, not a blocking prompt. User can ignore and continue.
+4. If user is already inside the pack's workflow, do not re-suggest.
 
 **Rules:**
 - Hard limit: 1 hop. NEVER chain recommendations (fix→test→preflight→...). Suggest ONE, let the user decide.
