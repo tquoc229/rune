@@ -50,7 +50,6 @@
     "commands/",
     "agents/",
     "hooks/",
-    "docs/",
     "references/"
   ],
   "homepage": "https://rune-kit.github.io/rune",
