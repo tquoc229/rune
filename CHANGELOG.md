@@ -3,6 +3,47 @@
 All notable changes to Rune are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.5.0] - 2026-03-25
+
+### Added
+- **Compiled Intent Mesh (CIM)** — compile-time `skill-index.json` generation with intent keywords, adjacency graph, and chain predictions
+- **intent-router hook** — UserPromptSubmit hook that auto-suggests skill routing based on prompt analysis against compiled index
+- **Privacy Mesh** — three-tier pre-tool guard (ALLOW/WARN/BLOCK) with content scanning for AWS keys, GitHub tokens, Stripe keys, etc.
+- **Per-project privacy config** — `.rune/privacy.json` for custom BLOCK/WARN/ALLOW patterns and elevated skills
+- **Skill-aware elevation** — sentinel, review, audit bypass WARN tier; BLOCK tier cannot be bypassed
+- **Split pack auto-discovery** — compiler discovers skill files from `skills/` subdir when `format: split` packs have no explicit manifest
+- **550 tests** — 18 new tests for skill-index generation, hook behavior, and split pack discovery
+
+### Fixed
+- **Command injection** in `version-sync-check.js` — replaced `execSync` with `execFileSync`
+- **Dynamic doctor threshold** — skill count no longer hardcoded, scans source directory
+- **Split pack builds** — packs with `format: split` but no `skills:` YAML array now build correctly
+
+### Changed
+- Skill count: 60→61 (L3: +1 slides)
+- Hook count: 8→10 (intent-router, pre-tool-guard rewrite)
+- Pre-tool-guard: simple WARN → three-tier Privacy Mesh with content scanning
+
+## [2.4.0] - 2026-03-24
+
+### Added
+- **Scripts Bundling** — compiler copies `scripts/` directories and resolves `{scripts_dir}` placeholders in skill output
+- **slides** skill (L3) — presentation/slide generation utility
+- **Mesh Contract** — `.rune/contract.md` enforced by cook and sentinel
+
+### Changed
+- Skill count: 59→60 (L3: 26→27)
+
+## [2.3.0] - 2026-03-22
+
+### Added
+- **Tier Override** — compiler resolves Pro/Business skills over Free counterparts with `discoverTieredPacks()`
+- Skill-level merging for tiered packs (Pro overrides Free, Business overrides both)
+- 8 tests for tier override functionality
+
+### Changed
+- Compiler emitter supports multi-tier pack resolution
+
 ## [2.2.6] - 2026-03-18
 
 ### Improved
