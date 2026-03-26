@@ -220,7 +220,7 @@ export async function buildAll({ runeRoot, outputRoot, adapter, disabledSkills =
 
   // Generate AGENTS.md for non-Claude platforms
   if (adapter.name !== 'claude') {
-    const agentsMdContent = generateAgentsMd(runeRoot, stats, adapter);
+    const agentsMdContent = await generateAgentsMd(runeRoot, stats, adapter);
     await writeFile(path.join(outputRoot, 'AGENTS.md'), agentsMdContent, 'utf-8');
     stats.files.push('AGENTS.md');
   }
