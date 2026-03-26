@@ -61,6 +61,10 @@ export default {
     return `rune-${skillName}-scripts`;
   },
 
+  referencesDir(skillName) {
+    return `rune-${skillName}-references`;
+  },
+
   postProcess(content) {
     return content.replace(/^context: fork\n/gm, '').replace(/^agent: general-purpose\n/gm, '');
   },

@@ -61,6 +61,31 @@ async function discoverPacks(extensionsDir, enabledPacks = null) {
 }
 
 /**
+ * Copy all extra directories from skill source to output
+ * Copies everything except SKILL.md (which is already processed)
+ *
+ * @param {string} sourceSkillDir - e.g. skills/cook/
+ * @param {string} outputSkillDir - e.g. .codex/skills/rune-cook/
+ * @returns {Promise<string[]>} list of copied directory names
+ */
+async function copySkillExtraDirs(sourceSkillDir, outputSkillDir) {
+  if (!existsSync(sourceSkillDir)) return [];
+
+  const entries = await readdir(sourceSkillDir, { withFileTypes: true });
+  const dirs = entries.filter((e) => e.isDirectory());
+
+  const copied = [];
+  for (const dir of dirs) {
+    const sourcePath = path.join(sourceSkillDir, dir.name);
+    const outputPath = path.join(outputSkillDir, dir.name);
+    await cp(sourcePath, outputPath, { recursive: true });
+    copied.push(dir.name);
+  }
+
+  return copied;
+}
+
+/**
  * Copy scripts directory from skill source to output.
  *
  * @param {string} sourceScriptsDir - e.g. skills/slides/scripts/
@@ -258,11 +283,12 @@ export async function buildAll({
 
       let outputPath;
       let displayName;
+      let skillDir = null;
 
       if (adapter.useSkillDirectories) {
         // Directory-per-skill: .codex/skills/rune-{name}/SKILL.md
         const dirName = `${adapter.skillPrefix}${parsed.name}`;
-        const skillDir = path.join(outputDir, dirName);
+        skillDir = path.join(outputDir, dirName);
         await mkdir(skillDir, { recursive: true });
         outputPath = path.join(skillDir, adapter.skillFileName || 'SKILL.md');
         displayName = `${dirName}/${adapter.skillFileName || 'SKILL.md'}`;
@@ -273,6 +299,11 @@ export async function buildAll({
       }
 
       await writeFile(outputPath, output, 'utf-8');
+
+      // Copy extra directories (references/, etc.) from skill source
+      if (adapter.useSkillDirectories && skillDir) {
+        await copySkillExtraDirs(skillSourceDir, skillDir);
+      }
 
       // Copy scripts/ directory if present
       if (hasScripts) {
