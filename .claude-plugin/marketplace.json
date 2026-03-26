@@ -4,7 +4,8 @@
     "name": "Rune Contributors"
   },
   "metadata": {
-    "description": "Less skills. Deeper connections. A lean, interconnected skill ecosystem for Claude Code."
+    "description": "Less skills. Deeper connections. A lean, interconnected skill ecosystem for Claude Code.",
+    "website": "https://rune-kit.github.io/rune"
   },
   "plugins": [
     {
@@ -16,87 +17,33 @@
         "name": "Rune Contributors"
       },
       "homepage": "https://github.com/rune-kit/rune",
-      "repository": "https://github.com/rune-kit/rune",
+"repository": "https://github.com/rune-kit/rune",
       "license": "MIT",
       "category": "workflow"
     },
     {
-      "name": "@rune/ui",
-      "source": "./extensions/ui",
-      "description": "Frontend UI patterns — design systems, accessibility, animation",
-      "category": "frontend"
+      "name": "@rune-pro",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/rune-kit/rune-pro"
+      },
+      "description": "Rune Pro — Product Management, Sales, Data Science, Support. 4 premium packs with deep business workflows. $49 lifetime.",
+      "homepage": "https://rune-kit.github.io/rune#pricing",
+      "repository": "https://github.com/rune-kit/rune-pro",
+      "category": "premium"
     },
     {
-      "name": "@rune/backend",
-      "source": "./extensions/backend",
-      "description": "Backend patterns — API, auth, database, middleware",
-      "category": "backend"
-    },
-    {
-      "name": "@rune/devops",
-      "source": "./extensions/devops",
-      "description": "DevOps — Docker, CI/CD, monitoring, server setup",
-      "category": "devops"
-    },
-    {
-      "name": "@rune/mobile",
-      "source": "./extensions/mobile",
-      "description": "Mobile — React Native, Flutter, app store, native bridge",
-      "category": "mobile"
-    },
-    {
-      "name": "@rune/security",
-      "source": "./extensions/security",
-      "description": "Deep security — OWASP audit, pentest, compliance",
-      "category": "security"
-    },
-    {
-      "name": "@rune/trading",
-      "source": "./extensions/trading",
-      "description": "Fintech — real-time data, charts, indicators, trade logic preservation",
-      "category": "domain"
-    },
-    {
-      "name": "@rune/saas",
-      "source": "./extensions/saas",
-      "description": "SaaS — multi-tenant, billing, subscription, onboarding",
-      "category": "domain"
-    },
-    {
-      "name": "@rune/ecommerce",
-      "source": "./extensions/ecommerce",
-      "description": "E-commerce — Shopify, payments, cart, inventory",
-      "category": "domain"
-    },
-    {
-      "name": "@rune/ai-ml",
-      "source": "./extensions/ai-ml",
-      "description": "AI/ML — LLM integration, RAG, embeddings, fine-tuning",
-      "category": "domain"
-    },
-    {
-      "name": "@rune/gamedev",
-      "source": "./extensions/gamedev",
-      "description": "Game dev — Three.js, WebGL, game loops, physics",
-      "category": "domain"
-    },
-    {
-      "name": "@rune/content",
-      "source": "./extensions/content",
-      "description": "Content — blog, CMS, MDX, i18n, SEO",
-      "category": "domain"
-    },
-    {
-      "name": "@rune/analytics",
-      "source": "./extensions/analytics",
-      "description": "Analytics — tracking, A/B testing, funnels, dashboards",
-      "category": "domain"
-    },
-    {
-      "name": "@rune/chrome-ext",
-      "source": "./extensions/chrome-ext",
-      "description": "Chrome Extension — manifest v3, service workers, content scripts, popup UI",
-      "category": "domain"
+      "name": "@rune-business",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/rune-kit/rune-business"
+      },
+      "description": "Rune Business — Finance, Legal, HR, Enterprise Search. 4 enterprise packs + all Pro packs included. $149 lifetime.",
+      "homepage": "https://rune-kit.github.io/rune#pricing",
+      "repository": "https://github.com/rune-kit/rune-business",
+      "category": "premium"
     }
+  ]
+}
   ]
 }
