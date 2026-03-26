@@ -101,6 +101,10 @@
     },
     {
       "name": "@rune-pro",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/rune-kit/rune-pro"
+      },
       "description": "Rune Pro — Product Management, Sales, Data Science, Support. 4 premium packs with deep business workflows. $49 lifetime.",
       "homepage": "https://rune-kit.github.io/rune#pricing",
       "repository": "https://github.com/rune-kit/rune-pro",
@@ -108,6 +112,10 @@
     },
     {
       "name": "@rune-business",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/rune-kit/rune-business"
+      },
       "description": "Rune Business — Finance, Legal, HR, Enterprise Search. 4 enterprise packs + all Pro packs included. $149 lifetime.",
       "homepage": "https://rune-kit.github.io/rune#pricing",
       "repository": "https://github.com/rune-kit/rune-business",
