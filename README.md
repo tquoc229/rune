@@ -447,11 +447,11 @@ See [docs/MULTI-PLATFORM.md](docs/MULTI-PLATFORM.md) for the full architecture.
 Core Skills:       61 (L0: 1 │ L1: 5 │ L2: 28 │ L3: 27)
 Extension Packs:   14 free + 4 pro + 4 business
 Mesh Connections:  200+ cross-references
-Mesh Signals:      17 signals across 15 skills (emit/listen graph)
+Mesh Signals:      57 signals across 66 skills (emit/listen graph)
 Connections/Skill: 3.4 avg
 Platforms:         8 (Claude Code, Cursor, Windsurf, Antigravity, Codex, OpenCode, OpenClaw, Generic)
 Compiler:          ~1400 LOC (parser + 8 transforms + 8 adapters + CLI)
-Tests:             566 (compiler + signals + hooks + scripts)
+Tests:             870 (compiler + signals + hooks + scripts)
 Pack Depth:        22 packs total (14 free + 4 pro + 4 business, all free packs rated Deep)
 ```
 
