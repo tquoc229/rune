@@ -1,0 +1,66 @@
+name: Telegram Release Notification
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get release info
+        id: release
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          PREV_TAG=$(git tag --sort=-v:refname | grep '^v' | sed -n '2p')
+
+          # Build changelog from commits since last tag
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log "${PREV_TAG}..${TAG}" --pretty=format:"• %s" --no-merges | head -20)
+          else
+            CHANGELOG=$(git log --pretty=format:"• %s" --no-merges -10)
+          fi
+
+          # Escape special chars for Telegram MarkdownV2
+          escape_md() {
+            echo "$1" | sed 's/[_*\[\]()~`>#+\-=|{}.!]/\\&/g'
+          }
+
+          CHANGELOG_ESCAPED=$(escape_md "$CHANGELOG")
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "prev_tag=$PREV_TAG" >> "$GITHUB_OUTPUT"
+
+          # Use delimiter for multiline
+          {
+            echo "changelog<<CHANGELOG_EOF"
+            echo "$CHANGELOG_ESCAPED"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Send Telegram notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TAG="${{ steps.release.outputs.tag }}"
+          CHANGELOG="${{ steps.release.outputs.changelog }}"
+
+          MESSAGE="🔮 *Rune ${TAG}*
+
+          ${CHANGELOG}
+
+          📦 [GitHub Release](https://github.com/rune-kit/rune/releases/tag/${TAG})
+          ⬆️ \`npm i @rune-kit/rune@latest\`"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode="MarkdownV2" \
+            -d text="${MESSAGE}" \
+            -d disable_web_page_preview=true \
+            || echo "Telegram notification failed (non-blocking)"
