@@ -451,7 +451,7 @@ Mesh Signals:      57 signals across 66 skills (emit/listen graph)
 Connections/Skill: 3.4 avg
 Platforms:         8 (Claude Code, Cursor, Windsurf, Antigravity, Codex, OpenCode, OpenClaw, Generic)
 Compiler:          ~1400 LOC (parser + 8 transforms + 8 adapters + CLI)
-Tests:             870 (compiler + signals + hooks + scripts)
+Tests:             946 (compiler + signals + hooks + scripts + status + visualizer)
 Pack Depth:        22 packs total (14 free + 4 pro + 4 business, all free packs rated Deep)
 ```
 
