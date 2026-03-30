@@ -8,6 +8,8 @@ metadata:
   model: sonnet
   group: development
   tools: "Read, Glob, Grep"
+  emit: review.complete, review.issues
+  listen: code.changed
 ---
 
 # review

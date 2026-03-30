@@ -10,6 +10,7 @@ metadata:
   model: opus
   group: orchestrator
   tools: "Read, Write, Edit, Bash, Glob, Grep"
+  emit: phase.complete
 ---
 
 # team

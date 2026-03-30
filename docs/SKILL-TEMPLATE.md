@@ -7,6 +7,8 @@ metadata:
   layer: L1|L2|L3
   model: haiku|sonnet|opus
   group: orchestrator|creation|development|quality|delivery|rescue|knowledge|reasoning|validation|state|monitoring|media|deps
+  emit: signal.name, another.signal
+  listen: signal.name
 ---
 
 # skill-name

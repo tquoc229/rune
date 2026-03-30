@@ -9,6 +9,8 @@ metadata:
   model: sonnet
   group: delivery
   tools: "Read, Write, Edit, Bash, Glob, Grep"
+  emit: deploy.complete
+  listen: security.passed, tests.passed
 ---
 
 # deploy

@@ -8,6 +8,7 @@ metadata:
   model: haiku
   group: creation
   tools: "Read, Glob, Grep"
+  emit: codebase.scanned
 ---
 
 # scout

@@ -8,6 +8,8 @@ metadata:
   model: sonnet
   group: development
   tools: "Read, Write, Edit, Bash, Glob, Grep"
+  emit: code.changed
+  listen: bug.diagnosed, review.issues, preflight.blocked, security.blocked
 ---
 
 # fix

@@ -8,6 +8,8 @@ metadata:
   model: opus
   group: creation
   tools: "Read, Write, Edit, Glob, Grep"
+  emit: plan.ready
+  listen: codebase.scanned
 ---
 
 # plan

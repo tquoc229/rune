@@ -8,6 +8,7 @@ metadata:
   model: haiku
   group: validation
   tools: "Read, Bash, Glob, Grep"
+  listen: code.changed
 ---
 
 # verification

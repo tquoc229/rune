@@ -609,8 +609,12 @@ function generateSkillIndex(parsedSkills) {
       group: skill.group,
       description: skill.description.slice(0, 200),
       connections: outbound,
+      ...(skill.signals ? { signals: skill.signals } : {}),
     };
   }
+
+  // Build signal graph — maps each signal to its emitters and listeners
+  const signalGraph = buildSignalGraph(parsedSkills);
 
   // Build intent patterns from INTENT_KEYWORDS + skill descriptions
   const intents = {};
@@ -630,11 +634,45 @@ function generateSkillIndex(parsedSkills) {
   }
 
   return {
-    version: 1,
+    version: 2,
     generated: new Date().toISOString(),
     skillCount: parsedSkills.length,
     skills,
     graph,
+    signals: signalGraph,
     intents,
   };
+}
+
+/**
+ * Build signal graph from parsed skills' emit/listen declarations.
+ * Maps each signal name to its emitters and listeners.
+ *
+ * @param {Array} parsedSkills
+ * @returns {object} { "code.changed": { emitters: ["fix"], listeners: ["test", "review"] } }
+ */
+function buildSignalGraph(parsedSkills) {
+  const signals = {};
+
+  for (const skill of parsedSkills) {
+    if (!skill.signals) continue;
+
+    for (const signal of skill.signals.emit) {
+      if (!signals[signal]) signals[signal] = { emitters: [], listeners: [] };
+      signals[signal].emitters.push(skill.name);
+    }
+
+    for (const signal of skill.signals.listen) {
+      if (!signals[signal]) signals[signal] = { emitters: [], listeners: [] };
+      signals[signal].listeners.push(skill.name);
+    }
+  }
+
+  // Sort for deterministic output
+  for (const entry of Object.values(signals)) {
+    entry.emitters.sort();
+    entry.listeners.sort();
+  }
+
+  return signals;
 }

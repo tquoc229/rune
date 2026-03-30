@@ -8,6 +8,8 @@ metadata:
   model: sonnet
   group: development
   tools: "Read, Bash, Glob, Grep"
+  emit: bug.diagnosed
+  listen: tests.failed
 ---
 
 # debug

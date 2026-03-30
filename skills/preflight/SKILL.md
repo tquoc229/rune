@@ -8,6 +8,8 @@ metadata:
   model: sonnet
   group: quality
   tools: "Read, Bash, Glob, Grep"
+  emit: preflight.passed, preflight.blocked
+  listen: code.changed
 ---
 
 # preflight

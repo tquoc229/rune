@@ -124,6 +124,53 @@ Override: user preference   → manual in config
 | GIT | git |
 | DOCUMENTS | doc-processor |
 
+## Mesh Signals (v2.6.0)
+
+Event-driven skill communication via frontmatter declarations. Skills declare what signals they `emit` and `listen` to — the compiler builds a signal graph and validates consistency.
+
+### Frontmatter
+
+```yaml
+metadata:
+  emit: code.changed, tests.passed
+  listen: plan.ready, codebase.scanned
+```
+
+### Signal Naming
+
+Lowercase, dot-separated: `<domain>.<event>` (e.g. `code.changed`, `tests.failed`, `deploy.complete`).
+
+### Signal Catalog
+
+| Signal | Emitters | Listeners |
+|--------|----------|-----------|
+| `code.changed` | fix | test, sentinel, review, preflight, verification |
+| `tests.passed` | test | deploy |
+| `tests.failed` | test | debug |
+| `security.passed` | sentinel | deploy |
+| `security.blocked` | sentinel | fix |
+| `review.complete` | review | cook |
+| `review.issues` | review | fix |
+| `plan.ready` | plan | cook |
+| `codebase.scanned` | scout | plan, brainstorm |
+| `phase.complete` | cook, team | session-bridge |
+| `deploy.complete` | deploy | watchdog |
+| `bug.diagnosed` | debug | fix |
+
+### Validation
+
+- `node scripts/validate-signals.js` — checks all signals for consistency
+- Every `listen` must have a matching `emit` (hard error)
+- Unlistened emitters generate warnings (acceptable for external consumers)
+- Signal graph compiled into `skill-index.json` under the `signals` key
+
+### Design Principles
+
+1. **Declarative, not runtime** — signals are metadata for discovery and validation, not a pub/sub bus
+2. **Graph-based, not linear** — one signal can trigger multiple listeners in parallel (vs. before/after hooks)
+3. **Layer-agnostic** — any skill at any layer can emit or listen
+4. **Extensible** — extension packs can declare their own signals
+
 ## Cross-Hub Mesh (L2 ↔ L2)
 
 ```

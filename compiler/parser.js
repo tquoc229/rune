@@ -5,6 +5,12 @@
  * Extracts frontmatter, cross-references, tool references, HARD-GATE blocks, and sections.
  */
 
+/**
+ * Metadata fields that should be parsed as comma-separated arrays
+ * e.g. emit: code.changed, tests.passed → ["code.changed", "tests.passed"]
+ */
+const COMMA_LIST_FIELDS = new Set(['emit', 'listen']);
+
 const CROSS_REF_PATTERN = /`?rune:([a-z][\w-]*)`?/g;
 const TOOL_REF_PATTERN = /`(Read|Write|Edit|Glob|Grep|Bash|TodoWrite|Skill|Agent)`/g;
 const HARD_GATE_PATTERN = /<HARD-GATE>([\s\S]*?)<\/HARD-GATE>/g;
@@ -41,10 +47,18 @@ function parseFrontmatter(content) {
     }
 
     if (currentIndent === 'nested' && line.startsWith('  ')) {
-      const kvMatch = trimmed.match(/^(\w+):\s*(.+)$/);
+      const kvMatch = trimmed.match(/^(\w[\w-]*):\s*(.+)$/);
       if (kvMatch) {
-        const value = kvMatch[2].replace(/^["']|["']$/g, '');
-        frontmatter[nestedKey][kvMatch[1]] = value;
+        const rawValue = kvMatch[2].replace(/^["']|["']$/g, '');
+        // Comma-separated list fields → parse as array
+        if (COMMA_LIST_FIELDS.has(kvMatch[1])) {
+          frontmatter[nestedKey][kvMatch[1]] = rawValue
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+        } else {
+          frontmatter[nestedKey][kvMatch[1]] = rawValue;
+        }
       }
       continue;
     }
@@ -168,12 +182,18 @@ export function parseSkill(content, filePath = '') {
 
   const metadata = frontmatter.metadata || {};
 
+  // Extract signals — emit/listen arrays from metadata
+  const emit = Array.isArray(metadata.emit) ? metadata.emit : [];
+  const listen = Array.isArray(metadata.listen) ? metadata.listen : [];
+  const signals = emit.length > 0 || listen.length > 0 ? { emit, listen } : null;
+
   return {
     name: frontmatter.name || '',
     description: frontmatter.description || '',
     layer: metadata.layer || 'L2',
     model: metadata.model || 'sonnet',
     group: metadata.group || 'general',
+    signals,
     contextFork: frontmatter.context === 'fork',
     agentType: frontmatter.agent || null,
     body,

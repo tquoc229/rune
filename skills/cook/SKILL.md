@@ -10,6 +10,8 @@ metadata:
   model: sonnet
   group: orchestrator
   tools: "Read, Write, Edit, Bash, Glob, Grep"
+  emit: phase.complete
+  listen: plan.ready, review.complete
 ---
 
 # cook

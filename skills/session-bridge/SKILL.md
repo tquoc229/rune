@@ -8,6 +8,7 @@ metadata:
   model: haiku
   group: state
   tools: "Read, Write, Edit, Glob, Grep"
+  listen: phase.complete
 ---
 
 # session-bridge

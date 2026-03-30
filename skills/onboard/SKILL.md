@@ -8,6 +8,7 @@ metadata:
   model: sonnet
   group: quality
   tools: "Read, Write, Edit, Glob, Grep"
+  emit: project.onboarded
 ---
 
 # onboard

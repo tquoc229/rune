@@ -8,6 +8,8 @@ metadata:
   model: opus
   group: creation
   tools: "Read, Glob, Grep"
+  emit: ideas.ready
+  listen: codebase.scanned
 ---
 
 # brainstorm

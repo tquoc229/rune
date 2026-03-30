@@ -8,6 +8,8 @@ metadata:
   model: sonnet
   group: quality
   tools: "Read, Bash, Glob, Grep"
+  emit: security.passed, security.blocked
+  listen: code.changed
 ---
 
 # sentinel
