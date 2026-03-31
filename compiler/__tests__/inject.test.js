@@ -9,6 +9,9 @@ const SKILLS_DIR = path.resolve(__dirname, '../../skills');
 const PRO_DIR = path.resolve(__dirname, '../../../Pro/extensions');
 const BUSINESS_DIR = path.resolve(__dirname, '../../../Business/extensions');
 
+// Skip Pro/Business tier tests when repos are not available (CI)
+const HAS_PRO = existsSync(PRO_DIR);
+
 // Collect known Free core skill names
 const knownSkills = new Set();
 if (existsSync(SKILLS_DIR)) {
@@ -19,7 +22,7 @@ if (existsSync(SKILLS_DIR)) {
   }
 }
 
-describe('inject.json format validation', () => {
+(HAS_PRO ? describe : describe.skip)('inject.json format validation', () => {
   const packDirs = [];
 
   // Collect all extension dirs that might have inject.json
@@ -102,7 +105,7 @@ describe('inject.json format validation', () => {
   }
 });
 
-describe('injection rule coverage', () => {
+(HAS_PRO ? describe : describe.skip)('injection rule coverage', () => {
   const expectedPacks = ['pro-product', 'pro-data-science', 'pro-sales', 'pro-support'];
 
   for (const packName of expectedPacks) {

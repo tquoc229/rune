@@ -186,7 +186,10 @@ No table here.
 
 // ─── Business org template file validation ────────────────────────
 
-describe('Business org-templates file validation', () => {
+// Skip Business tier tests when Business repo is not available (CI)
+const HAS_BUSINESS = existsSync(BUSINESS_DIR);
+
+(HAS_BUSINESS ? describe : describe.skip)('Business org-templates file validation', () => {
   const templateFiles = [];
 
   if (existsSync(ORG_TEMPLATES_DIR)) {
@@ -314,9 +317,7 @@ describe('Business org-templates file validation', () => {
 
 // ─── Governance level scaling tests ───────────────────────────────
 
-describe('org template governance scaling', () => {
-  if (!existsSync(ORG_TEMPLATES_DIR)) return;
-
+(HAS_BUSINESS ? describe : describe.skip)('org template governance scaling', () => {
   const templateData = {};
   for (const name of ['startup', 'mid-size', 'enterprise']) {
     const filePath = path.join(ORG_TEMPLATES_DIR, `${name}.md`);

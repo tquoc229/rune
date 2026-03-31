@@ -11,7 +11,10 @@ const SKILLS_DIR = path.resolve(__dirname, '../../skills');
 
 // ─── HTML report template validation ──────────────────────────────
 
-describe('Business report-templates directory', () => {
+// Skip Business tier tests when Business repo is not available (CI)
+const HAS_BUSINESS = existsSync(BUSINESS_DIR);
+
+(HAS_BUSINESS ? describe : describe.skip)('Business report-templates directory', () => {
   test('report-templates directory exists', () => {
     assert.ok(existsSync(REPORT_TEMPLATES_DIR), 'Expected Business/report-templates/ to exist');
   });

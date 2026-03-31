@@ -151,7 +151,10 @@ describe('YAML list parsing in frontmatter', () => {
   });
 });
 
-describe('Pro template files', () => {
+// Skip Pro tier tests when Pro repo is not available (CI)
+const HAS_PRO = existsSync(PRO_DIR);
+
+(HAS_PRO ? describe : describe.skip)('Pro template files', () => {
   const packs = ['pro-product', 'pro-data-science', 'pro-sales', 'pro-support'];
 
   for (const pack of packs) {
@@ -220,7 +223,7 @@ describe('Pro template files', () => {
   }
 });
 
-describe('template count per pack', () => {
+(HAS_PRO ? describe : describe.skip)('template count per pack', () => {
   const expectedCounts = {
     'pro-product': 3,
     'pro-data-science': 2,
