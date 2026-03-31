@@ -68,6 +68,52 @@ for (const { path, pattern } of versionFiles) {
   }
 }
 
+// 1c. marketplace.json version
+const marketplacePath = join(ROOT, '.claude-plugin/marketplace.json');
+if (existsSync(marketplacePath)) {
+  const marketplace = JSON.parse(readFileSync(marketplacePath, 'utf8'));
+  const mpPlugin = marketplace.plugins?.find((p) => p.name === 'rune');
+  if (mpPlugin) {
+    if (mpPlugin.version === pkg.version) {
+      pass(`marketplace.json: v${mpPlugin.version}`);
+    } else {
+      fail(`marketplace.json: shows v${mpPlugin.version}, expected v${pkg.version}`);
+    }
+  } else {
+    warn('marketplace.json: no "rune" plugin entry found');
+  }
+}
+
+// 1d. Skill count consistency across docs
+const skillsDir2 = join(ROOT, 'skills');
+if (existsSync(skillsDir2)) {
+  const actualSkillCount = readdirSync(skillsDir2, { withFileTypes: true }).filter(
+    (d) => d.isDirectory() && existsSync(join(skillsDir2, d.name, 'SKILL.md')),
+  ).length;
+
+  const skillCountFiles = [
+    { path: 'docs/index.html', pattern: /data-target="(\d+)"[\s\S]*?Core Skills/m },
+    { path: 'docs/index.html', pattern: /(\d+) core skills \(L0/ },
+    { path: 'docs/index.html', pattern: /Core dev skills \((\d+)\)/ },
+    { path: 'README.md', pattern: /^\s*(\d+) skills · \d+\+ mesh/m },
+    { path: 'CLAUDE.md', pattern: /(\d+) core skills built/ },
+  ];
+
+  for (const { path, pattern } of skillCountFiles) {
+    const filePath = join(ROOT, path);
+    if (!existsSync(filePath)) continue;
+    const content = readFileSync(filePath, 'utf8');
+    const match = content.match(pattern);
+    if (!match) continue;
+    const found = parseInt(match[1], 10);
+    if (found === actualSkillCount) {
+      pass(`${path}: ${found} skills`);
+    } else {
+      fail(`${path}: shows ${found} skills, actual is ${actualSkillCount}`);
+    }
+  }
+}
+
 // 2. npm registry check (non-blocking, just warn)
 try {
   const npmVersion = execFileSync('npm', ['view', pkg.name, 'version'], {
