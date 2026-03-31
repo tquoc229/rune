@@ -4,7 +4,7 @@ description: "Validates agent claims against evidence trail. Catches 'done' with
 user-invocable: false
 metadata:
   author: runedev
-  version: "1.6.0"
+  version: "1.7.0"
   layer: L3
   model: haiku
   group: validation
@@ -210,6 +210,29 @@ Before emitting verdict, verify evidence quality:
 | Quote matches claim exactly | CONFIRMED |
 | Quote contradicts claim | CONTRADICTED |
 
+### Step 5.5 — Plan Diff Check
+
+When validating a phase within a master plan, diff actual changes against the phase plan file:
+
+1. **Read the active phase plan** — `Glob` for `.rune/plan-*-phase*.md` matching the current phase
+2. **Extract `## Files Touched`** — build a list of expected files (new/modify/delete)
+3. **Extract `## Tasks`** — build a list of all `- [ ]` and `- [x]` items
+4. **Compare against actual changes** — `git diff --name-only` (or file system scan)
+5. **Report**:
+
+| Check | Status |
+|-------|--------|
+| Unchecked task in phase plan (`- [ ]` still exists) | **INCOMPLETE** — task was not done |
+| File in plan's "Files Touched" but not in actual diff | **MISSING** — planned file was never touched |
+| File in actual diff but NOT in plan's "Files Touched" | **UNPLANNED** — scope creep (warn, not block) |
+| All tasks `[x]` AND all planned files touched | **PLAN-ALIGNED** |
+
+```
+Plan Diff: PLAN-ALIGNED | INCOMPLETE (2 unchecked tasks) | MISSING (1 file never touched)
+```
+
+**Skip if**: No active phase plan found (single-task, no master plan). **MANDATORY** for multi-phase master plans.
+
 ## Verdict Rules
 
 ```
@@ -245,6 +268,7 @@ Completion Gate Report with status (CONFIRMED/UNCONFIRMED/CONTRADICTED), claim v
 | Rubber-stamping — all CONFIRMED without scrutiny | HIGH | Default-FAIL mindset: actively seek 3-5 issues. Zero issues = red flag, apply skeptic sweep on weakest 2 claims |
 | Partial completion claimed as full — 80% done but "implemented" | HIGH | Adversarial checklist: check for partial completion, scope mismatch, evidence-claim alignment |
 | Self-Validation skipped — skill has checks but gate ignores them | HIGH | Step 1c: extract Self-Validation from skill's SKILL.md, treat each as implicit claim. Missing = UNCONFIRMED |
+| Plan says done but phase file has unchecked tasks | HIGH | Step 5.5: diff changed files vs phase plan's Files Touched + Tasks sections |
 
 ## Done When
 
@@ -252,6 +276,7 @@ Completion Gate Report with status (CONFIRMED/UNCONFIRMED/CONTRADICTED), claim v
 - Each claim matched against tool output evidence
 - Verdict table emitted with claim/evidence/verdict for each item
 - All 3 verification axes (Completeness/Correctness/Coherence) have at least one claim checked
+- Plan diff check passed (if multi-phase): all tasks checked, all planned files touched
 - Overall verdict: CONFIRMED / UNCONFIRMED / CONTRADICTED
 - If not CONFIRMED: specific gaps listed with remediation steps
 

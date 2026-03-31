@@ -5,7 +5,7 @@ context: fork
 agent: general-purpose
 metadata:
   author: runedev
-  version: "1.8.0"
+  version: "2.0.0"
   layer: L1
   model: sonnet
   group: orchestrator
@@ -204,7 +204,11 @@ Skip if: bug fix with clear repro steps | user said "just do it" | fast mode + <
 5. Invoke scout to scan the codebase (Glob + Grep + Read on relevant files)
 6. Summarize: what exists, project conventions, files likely to change, active decision constraints
 7. **Python async detection**: if Python project detected, `Grep` for async indicators (`async def`, `await`, `aiosqlite`, `aiohttp`, `asyncio.run`). If ≥3 matches → flag as **"async-first Python"** — new code defaults to `async def`
-8. Mark Phase 1 as `completed`
+8. **Explore-Before-Commit**: If scout reveals multiple viable approaches (e.g., 2+ libraries, 2+ architectural patterns), do NOT commit to an approach yet. Instead:
+   - List alternatives with 1-line trade-off each
+   - Flag to Phase 2 (plan) for formal comparison
+   - Separating "thinking" (Phase 1) from "committing" (Phase 2) prevents premature lock-in
+9. Mark Phase 1 as `completed`
 
 **Gate**: If scout finds the feature already exists → STOP and inform user.
 
@@ -462,7 +466,15 @@ Before entering ANY Phase N+1, assert: Phase N `completed` in TodoWrite | gate c
 2. Save to `.rune/decisions.md` (approach + trade-offs), `.rune/progress.md` (task complete), `.rune/conventions.md` (new patterns)
 3. **Skill metrics** → `.rune/metrics/skills.json`: increment phase run/skip counts, quality gate results, debug loop counts under `cook` key
 4. **Routing overrides** (H3): if Phase 4 hit max loops for an error pattern → write rule to `.rune/metrics/routing-overrides.json`. Max 10 active rules.
-5. **Step 8.5 — Capture Learnings**: `neural-memory` (Capture Mode) — 2-5 memories: architecture decisions, patterns, error root-causes, trade-offs. Cognitive language (causal/decisional/comparative). Tags: `[project, tech, topic]`. Priority 5 routine / 7-8 decisions / 9-10 critical errors.
+5. **Step 8.5 — Cross-Cutting Sweep**: After commit, check if this phase changed stats (skill count, test count, signal count, pack count, layer counts). If ANY stat changed:
+   - [ ] `README.md` — stats, badges, feature list
+   - [ ] `docs/index.html` (landing page) — meta tags, hero badge, install section, mesh stats, footer
+   - [ ] `dashboard.html` (if local) — KPI cards, test count, skill tabs, layer counts
+   - [ ] `CLAUDE.md` — commands, test count, skill list
+   - [ ] `MEMORY.md` — milestones, version info
+
+   **Skip if**: No stats changed (pure refactor, docs-only, style change). **MANDATORY** if any numeric stat in README differs from actual.
+6. **Step 8.6 — Capture Learnings**: `neural-memory` (Capture Mode) — 2-5 memories: architecture decisions, patterns, error root-causes, trade-offs. Cognitive language (causal/decisional/comparative). Tags: `[project, tech, topic]`. Priority 5 routine / 7-8 decisions / 9-10 critical errors.
 6. Mark Phase 8 as `completed`
 
 ## Autonomous Loop Patterns
@@ -521,6 +533,56 @@ If ambiguous between Cancel and Steer → ask user: "Did you mean stop, or chang
 
 Hard caps: MAX_DEBUG_LOOPS=3, MAX_QUALITY_LOOPS=2, MAX_REPLAN=1, MAX_PIVOT=1, MAX_FIXES=30, WTF_THRESHOLD=20%.
 Escalation chain: debug-fix (3x) → re-plan (1x) → brainstorm rescue (1x) → THEN escalate to user.
+
+### Structured Escalation Report
+
+> From agency-agents (msitarzewski/agency-agents, 50.8k★): "After 3 retry failures, structured escalation prevents cargo-cult retrying."
+
+When escalation chain exhausts (all retries hit) or cook returns `BLOCKED`, produce a Structured Escalation Report instead of a vague "I can't do this":
+
+```markdown
+## Escalation Report
+- **Task**: [original task description]
+- **Status**: BLOCKED
+- **Attempts**: [count] across [N] phases
+
+### Failure History
+| # | Approach | Phase | Outcome | Root Cause |
+|---|---------|-------|---------|------------|
+| 1 | Direct fix | Phase 4 | Tests fail — null ref in auth.ts:42 | Missing user context |
+| 2 | Re-plan with guard clause | Phase 4 | Build fails — circular import | Guard approach introduces cycle |
+| 3 | Brainstorm rescue → adapter pattern | Phase 4 | Tests pass but perf regression 3x | Adapter adds indirection overhead |
+
+### Root Cause Analysis
+[1-2 sentences: why ALL approaches failed — is it architectural, environmental, or requirements-level?]
+
+### Recommended Resolutions (pick one)
+1. **Reassign** — different skill/agent with fresh context
+2. **Decompose** — break into smaller sub-tasks that CAN succeed independently
+3. **Revise requirements** — relax constraint X to unblock (specify which)
+4. **Accept partial** — ship what works, defer blocked portion
+5. **Defer** — park this task, work on something else first
+
+### Impact Assessment
+- **Blocked by this**: [downstream tasks/phases that depend on this]
+- **Not blocked**: [independent work that can continue]
+```
+
+<HARD-GATE>
+"Bad work is worse than no work." Cook MUST produce this report rather than attempting a 4th variant of a failing approach. Escalating is not failure — shipping broken code is.
+</HARD-GATE>
+
+### Subagent Question Gate
+
+> From superpowers (obra/superpowers, 84k★): "Subagents that start work without asking questions produce the wrong thing 40% of the time."
+
+Before dispatching a sub-skill (fix, test, review) for a non-trivial task (3+ files OR ambiguous scope):
+
+1. **Invite questions**: Include in the handoff: "Before starting, ask up to 3 clarifying questions if anything is unclear."
+2. **Answer before work**: If the sub-skill returns questions → answer them, THEN re-dispatch with answers included.
+3. **Skip if**: Fast/Nano rigor, single-file fix, or sub-skill is haiku-tier (too cheap to gate).
+
+This prevents the #1 parallel work failure: sub-skill assumes wrong interpretation, builds 500 LOC, then gets rejected in review.
 
 ### Subagent Status Protocol
 

@@ -4,7 +4,7 @@ description: "Context window management. Auto-triggered when context is filling 
 user-invocable: false
 metadata:
   author: runedev
-  version: "0.6.0"
+  version: "0.7.0"
   layer: L3
   model: haiku
   group: state
@@ -182,13 +182,29 @@ When ORANGE or RED is reached, use this table to determine whether compaction is
 | Research → Planning | YES | Research findings summarize well; key decisions survive |
 | Planning → Implementation | YES | Plan is in files (.rune/plan-*.md); context can reload from artifacts |
 | Debug → Next feature | YES | Debug findings are in Debug Report; fix has the diagnosis |
-| Mid-implementation (Phase 4) | **NO** | Losing file paths, partial changes, and test state is catastrophic |
+| Mid-implementation (Phase 4) | **CONDITIONAL** | Safe ONLY at task boundaries within Phase 4 (after a file is fully written + tested). Never mid-file-edit. See Mid-Loop Compaction below |
 | After failed approach → Pivot | YES | Failed approach should be discarded; fresh context helps |
 | Quality (Phase 5) → Verify | **NO** | Quality findings reference specific file:line in current context |
 | After commit (Phase 7) | YES | Work is persisted in git; safe boundary |
 
 **What survives compaction**: Task description, file paths mentioned, key decisions, plan reference, current phase.
 **What is lost**: Full file contents read, intermediate reasoning, exact error messages, tool output details.
+
+### Mid-Loop Compaction (Phase 4 Emergency)
+
+> From goclaw (nextlevelbuilder/goclaw, 832★): "Compact during run, not just at session boundary."
+
+When context hits RED during Phase 4 (implementation), compaction IS possible at **clean split points**:
+
+1. **Find a clean boundary**: completed task within the phase (file fully written + tests pass for that file)
+2. **Flush state first**: call `session-bridge` to save progress, then call `neural-memory` to capture decisions
+3. **Split 70/30**: preserve 70% of remaining context for continuation, summarize 30% of completed work
+4. **Never break tool pairs**: compaction MUST NOT split a `tool_use` from its `tool_result` — always keep pairs together
+5. **Inject continuation marker**: after compaction, include: "Resuming Phase 4. Tasks [1-3] complete. Currently on task 4. Plan file: `.rune/plan-X-phaseN.md`"
+
+**Timeout fallback**: If clean boundary can't be found within 30 seconds, create `.rune/.continue-here.md` and pause instead.
+
+**Skip if**: Context is ORANGE (not RED), or fewer than 3 tasks remain in the phase.
 
 ## Context Budget Audit (Baseline Cost Awareness)
 
@@ -251,6 +267,8 @@ Known failure modes for this skill. Check these before declaring done.
 | Injecting stale context from previous session without marking it historical | HIGH | Constraint 3: all loaded context must include session date marker |
 | Premature compaction from over-estimated utilization | MEDIUM | Tool count is directional only — sessions with heavy Read calls may need lower thresholds; only block at confirmed RED |
 | Not activating large-file adjustment on Python/Java codebases | MEDIUM | Track Read calls returning >500 lines; if ≥3 occur, switch to adjusted (0.8x) thresholds for the session |
+| Mid-loop compaction breaks tool_use/tool_result pair | CRITICAL | Always keep tool pairs together — splitting causes orphaned results and context corruption |
+| Mid-loop compaction without flushing state first | HIGH | session-bridge + neural-memory MUST run before compaction — losing unsaved decisions is worse than hitting context limit |
 
 ## Done When
 

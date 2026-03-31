@@ -104,12 +104,25 @@ IF ANY check fails → fix before reporting done. Do NOT defer to completion-gat
 
 Why: Completion-gate validates claims generically. Self-Validation catches domain-specific quality issues that only THIS skill understands (e.g., test skill checks assertion count, plan skill checks dependency ordering, review skill checks all files were read).
 
+## Cross-cutting Updates
+
+If this skill changes stats (skill count, test count, signal count, pack count, layer counts), sweep these files before committing:
+
+- [ ] `README.md` — stats, badges, feature list
+- [ ] `docs/index.html` (landing page) — meta tags, hero badge, mesh stats, footer
+- [ ] `dashboard.html` (if local) — KPI cards, test count, skill tabs, layer counts
+- [ ] `CLAUDE.md` — commands, test count, skill list
+- [ ] `MEMORY.md` — milestones, version info
+
+Skip if: pure refactor, docs-only, or no numeric stats changed.
+
 ## Done When
 
 - [condition 1 — specific, verifiable]
 - [condition 2]
 - [condition 3 — structured report emitted]
 - Self-Validation checklist: all checks passed
+- Cross-cutting files updated (if stats changed)
 
 ## Cost Profile
 

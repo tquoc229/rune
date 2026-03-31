@@ -3,7 +3,7 @@ name: fix
 description: Apply code changes and fixes. Writes implementation code, applies bug fixes, and verifies changes with tests. Core action hub in the development mesh.
 metadata:
   author: runedev
-  version: "0.6.0"
+  version: "0.7.0"
   layer: L2
   model: sonnet
   group: development
@@ -263,6 +263,7 @@ Known failure modes for this skill. Check these before declaring done.
 | Single-point validation (fix one spot, hope it holds) | MEDIUM | Step 5: add entry + business logic + environment + debug layers for data-flow bugs |
 | Removing debug instrumentation before fix is verified | MEDIUM | Step 5b: preserve `#region agent-debug` markers until all tests pass — premature cleanup erases failure history |
 | Runaway fix loop — 20+ fixes without checking quality decay | HIGH | Step 4.5: WTF-likelihood self-regulation. >20% risk = STOP. Hard cap 30 fixes/session. Each fix adds risk — diminishing returns after ~15 |
+| Each fix creates a new bug elsewhere — whack-a-mole | CRITICAL | Tight coupling signal. STOP fixing → escalate to debug with note "each fix creates new failure — suspect structural issue". Debug will route to plan for redesign |
 
 ## Done When
 

@@ -3,7 +3,7 @@ name: debug
 description: Root cause analysis for bugs and unexpected behavior. Traces errors through code, uses structured reasoning, and hands off to fix when cause is found. Core of the debug↔fix mesh.
 metadata:
   author: runedev
-  version: "0.8.0"
+  version: "0.9.0"
   layer: L2
   model: sonnet
   group: development
@@ -231,6 +231,21 @@ Track fix attempts in the Debug Report. If this is attempt N>1 for the same symp
 - Reference previous fix attempts and their outcomes
 - Explain why the previous fix didn't hold
 - If N=3: trigger the escalation gate above — classify and route accordingly
+
+### 3+ Fixes as Architectural Signal
+
+> From superpowers (obra/superpowers, 84k★): "Each fix revealing new problems elsewhere = structural issue, not a bug hunt."
+
+When 3+ **distinct** fixes fail (not retries of the same fix), STOP treating it as a bug:
+
+| Signal | Interpretation | Next Step |
+|--------|---------------|-----------|
+| Same blocker each time (API limit, platform gap) | Wrong approach | `brainstorm(mode="rescue")` — need fundamentally different path |
+| Different bugs each fix (null → race → type) | Wrong architecture | `plan` redesign — module has structural problems |
+| Each fix creates a new bug elsewhere | Tight coupling | The module boundary is wrong — need to redraw boundaries before fixing |
+| Fix works locally but fails in integration | Missing contract | Cross-module interface is undefined — add explicit contracts first |
+
+**Key insight**: After 3 failures, question the DESIGN, not the CODE. "Try harder" is never the right answer at this point.
 
 ### Step 7: Report
 
