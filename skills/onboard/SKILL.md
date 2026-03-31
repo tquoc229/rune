@@ -3,7 +3,7 @@ name: onboard
 description: Auto-generate project context for AI sessions. Scans codebase, creates CLAUDE.md and .rune/ setup so every future session starts with full context.
 metadata:
   author: runedev
-  version: "0.3.0"
+  version: "0.4.0"
   layer: L2
   model: sonnet
   group: quality
@@ -226,6 +226,56 @@ Audit the project's baseline context cost from MCP servers and agent configurati
 ```
 
 **Skip if**: Total MCP tools ≤80 AND CLAUDE.md ≤150 lines (healthy baseline).
+
+### Step 6e — AI-Driven Interview (Optional, User-Initiated)
+
+When invoked as `/rune onboard --interview` or when the project is too ambiguous for automated detection (e.g., no package.json, no clear entry point, mixed languages), switch to **conversational onboarding** — the AI asks targeted questions instead of relying solely on file scanning.
+
+#### Interview Flow
+
+Ask 5-8 questions in sequence, adapting based on answers. Start broad, narrow based on responses:
+
+```
+Q1: "What does this project do in one sentence?"
+    → Captures purpose (README may be missing or outdated)
+
+Q2: "Who uses this — internal team, external users, or both?"
+    → Determines audience, affects DEVELOPER-GUIDE.md tone
+
+Q3: "What's the main entry point — where does execution start?"
+    → Bypasses file scanning for complex monorepos
+
+Q4: "What commands do you use daily? (dev server, tests, build)"
+    → Gets verified commands instead of guessing from config files
+
+Q5: "Any areas of the codebase you'd warn a new developer about?"
+    → Captures tribal knowledge that no scan can detect
+
+Q6: "Are there external services this depends on? (databases, APIs, queues)"
+    → Maps integration points for Architecture Map
+
+Q7: "What's the deployment story — how does code get to production?"
+    → Captures CI/CD context
+
+Q8 (conditional): "Anything else a new session should know that's not in the code?"
+    → Catches edge cases, workarounds, known issues
+```
+
+#### Interview Rules
+
+- **Adapt**: Skip questions that were already answered by earlier responses. If Q1 reveals "it's a Next.js app", don't ask about the framework.
+- **Validate**: Cross-reference answers with actual file scan results. If user says "we use Jest" but `vitest.config.ts` exists, ask to clarify.
+- **Merge**: Interview answers supplement (not replace) automated scan. Scan provides facts, interview provides context and intent.
+- **Store**: Save interview responses as high-confidence entries in `.rune/conventions.md` and `.rune/cumulative-notes.md` (tagged `[from-interview]`)
+
+#### When to Auto-Suggest Interview
+
+Suggest switching to interview mode (but don't force it) when:
+- Step 2 produces 3+ "unknown" fields in tech stack detection
+- Project has no README.md and no package.json/pyproject.toml/Cargo.toml
+- Project appears to be a monorepo with 3+ distinct sub-projects
+
+Output: `"ℹ️ This project is hard to auto-detect. Run /rune onboard --interview for guided setup."`
 
 ### Step 7 — Commit
 Use `Bash` to stage and commit the generated files:

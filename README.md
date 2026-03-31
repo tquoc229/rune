@@ -83,15 +83,25 @@ _Methodology: Claude Code CLI headless mode (`claude -p --output-format json`), 
 
 ---
 
-## What's New (v2.6.0)
+## What's New (v2.7.0)
 
-- **Mesh Signals** — event-driven skill communication via frontmatter. Skills declare `emit` and `listen` signals; compiler builds a signal graph in `skill-index.json`. 17 signals across 15 core skills. Completes the spec-kit trilogy: Tier Override → Mesh Contract → Mesh Signals
+- **Deep Knowledge** — 8 core skills enriched with battle-tested patterns: context compaction, structured cumulative memory, milestone analysis, multi-provider adapters, AI-driven interview, prompt-as-API-contract, token budget tracking, incremental stream processing
+- **context-engine v0.8.0** — structured compaction summaries with continuation point anchoring + sentence-level stream processing pattern
+- **session-bridge v0.5.0** — cumulative project notes (`.rune/cumulative-notes.md`) for living institutional memory across sessions
+- **retro v0.3.0** — milestone progressive analysis at project thresholds (4/12/24/50 retros) with focal-point depth scaling
+- **mcp-builder v0.4.0** — multi-provider adapter pattern reference with discriminated StreamChunk union + dual-model cost config
+- **onboard v0.4.0** — AI-driven conversational interview mode (`--interview`) for ambiguous or complex projects
+- **perf v0.3.0** — token budget tracking for AI-powered apps (loop detection, model mismatch, unbounded tokens, duplicate calls)
+- **cook v2.0.0** — prompt-as-API-contract pattern for structured sub-skill output
+- **946 Tests** — compiler + signals + hooks + scripts + status + visualizer validation
+
+### Previous (v2.6.0)
+
+- **Mesh Signals** — event-driven skill communication via frontmatter. Skills declare `emit` and `listen` signals; compiler builds a signal graph in `skill-index.json`. 17 signals across 15 core skills
 - **Signal Validation** — `scripts/validate-signals.js` checks orphan listeners (hard error), unlistened emitters (warning), signal naming conventions
 - **Mesh Contract** (v2.5.0) — `.rune/contract.md` project-level invariants enforced by cook + sentinel as hard gates
-- **Compiled Intent Mesh** (v2.5.0) — compile-time `skill-index.json` with intent keywords, mesh graph, chain predictions
 - **Tier Override** — Pro/Business packs override Free packs with skill-level merging
 - **Scripts Bundling** — compiler copies `scripts/` directories, resolves `{scripts_dir}` placeholders
-- **566 Tests** — compiler + signals + hooks + scripts validation
 
 ### Signal Graph
 

@@ -4,7 +4,7 @@ description: "Context window management. Auto-triggered when context is filling 
 user-invocable: false
 metadata:
   author: runedev
-  version: "0.7.0"
+  version: "0.8.0"
   layer: L3
   model: haiku
   group: state
@@ -144,6 +144,79 @@ When loading context for a task (Phase 1 of cook, or onboard), use a 4-phase ret
 **Why**: The first search cycle reveals codebase-specific terms (custom class names, project conventions, internal APIs) that produce much better results in cycle 2. Loading 3 deeply relevant files beats loading 10 surface-level matches.
 
 **Key rule**: Stop at 3 high-relevance files, not 10 mediocre ones. Quality > quantity for context loading.
+
+## Compaction Technique: Structured Summary with Continuation Point
+
+When compaction is triggered (RED or approved ORANGE), generate a **structured summary** that replaces the full conversation history while preserving therapeutic continuity — the ability to resume exactly where work left off.
+
+### Summary Structure
+
+The compaction summary MUST include these sections in order:
+
+```markdown
+## Compaction Summary (generated at [tool call count])
+
+### Topics Covered
+- [bullet list of distinct topics/tasks worked on this session]
+
+### Key Decisions Made
+- [decision]: [rationale] — affects [files/modules]
+
+### Active Threads
+- [what was being worked on when compaction triggered — the "where we are now" anchor]
+- Current file: [path], current function/section: [name]
+- Partial progress: [what's done vs what remains in the immediate task]
+
+### Emotional/Priority Context
+- [user urgency level, blocking issues, deadlines mentioned]
+- [any user frustrations or preferences expressed this session]
+
+### Continuation Point
+> Resume: [exact next action to take — not vague "continue working" but specific "implement the validation logic in src/auth/validate.ts:47 using the Zod schema defined in Step 2"]
+```
+
+### Why This Structure
+
+Most compaction loses the **continuation point** — the agent knows WHAT was discussed but not WHERE to resume. The "Active Threads" and "Continuation Point" sections solve this by preserving:
+1. The exact file and function being edited
+2. What's done vs remaining in the current micro-task
+3. The specific next action (not a summary of the plan, but the next concrete step)
+
+### Rules
+
+- Summary MUST be <500 tokens — if longer, you're summarizing too much detail
+- "Active Threads" section is the most critical — get this wrong and the agent restarts from scratch
+- Never include full file contents in the summary — only paths and line references
+- Include user tone/urgency signals — these are lost in pure technical summaries
+
+## Incremental Stream Processing
+
+When processing streaming LLM output (e.g., in skills that invoke AI calls or process tool output incrementally), use **sentence-level buffering** instead of waiting for the full response:
+
+### Pattern: Buffer → Detect Boundary → Act
+
+```
+1. ACCUMULATE: Feed incoming chunks into a text buffer
+2. DETECT: Check for sentence boundaries:
+   - Primary: 40+ chars ending in . ! ? ; :
+   - Secondary: paragraph break (\n\n) with 15+ chars accumulated
+   - Never split mid-word or mid-code-block
+3. EXTRACT: Remove the complete sentence from the buffer
+4. ACT: Process the extracted sentence immediately (e.g., queue for TTS, parse for structured data, update progress display)
+5. CONTINUE: Keep accumulating the next sentence while processing the current one
+```
+
+### When to Use
+
+- **Skills that stream AI responses to the user**: process and display incrementally instead of waiting for the full response
+- **Background note-taking**: extract key points from streaming output as they arrive
+- **Progress reporting**: detect milestone keywords in streaming output to update progress
+
+### When NOT to Use
+
+- **Code generation**: wait for the full code block — partial code is useless
+- **JSON output**: accumulate until the closing brace — partial JSON can't be parsed
+- **Short responses** (<100 chars expected): overhead of boundary detection exceeds benefit
 
 ## Context Health Levels
 

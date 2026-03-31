@@ -3,7 +3,7 @@ name: retro
 description: Engineering retrospective. Analyzes commit history, work patterns, and code quality metrics with trend tracking. Per-person breakdowns, shipping streaks, and actionable improvements. Use when asked for "retro", "weekly review", "what did we ship", or "engineering retrospective".
 metadata:
   author: runedev
-  version: "0.2.0"
+  version: "0.3.0"
   layer: L2
   model: sonnet
   group: knowledge
@@ -226,6 +226,60 @@ Structure (~800-1500 words — concise, not a novel):
 12. **Trends** (Step 9, if available)
 
 **Tone**: Encouraging but candid. Specific and concrete. Anchored in actual commits, not vague impressions. Every critique paired with a specific suggestion.
+
+## Milestone Progressive Analysis
+
+At specific project milestones, retro automatically generates a **deeper analysis** with a different focal point per milestone. This goes beyond the standard weekly retro — it's a reflective checkpoint on the project's evolution.
+
+### Milestone Detection
+
+Count total retro snapshots in `.rune/retros/` (each represents ~1 retro session). Trigger milestone analysis when count reaches:
+
+| Milestone | Retro Count | Focal Point | Depth |
+|-----------|------------|-------------|-------|
+| First Month | 4 | **Foundations** — Are conventions solid? Is the architecture scaling? Are early decisions holding? | Standard + foundation review |
+| Quarter | 12 | **Patterns** — What recurring themes emerged? Which areas churn most? Is technical debt growing or shrinking? | Standard + theme extraction |
+| Half Year | 24 | **Growth** — How has the codebase evolved? Are the original architectural bets paying off? What would you do differently? | Standard + architecture review |
+| One Year | 50 | **Maturity** — Full project health assessment. Velocity trends over time. Team growth patterns. Knowledge distribution. | Standard + full evolution timeline |
+
+### Milestone Execution
+
+When a milestone is detected (retro count matches a threshold for the first time):
+
+1. **Announce**: `"🏁 Milestone: [name] ([count] retros). Generating deep analysis..."`
+2. **Load history**: Read ALL `.rune/retros/*.json` snapshots (not just the most recent)
+3. **Compute evolution metrics**: Plot key metrics over time (commits/week, test ratio, fix ratio, session depth)
+4. **Focal analysis**: Generate the milestone-specific analysis based on the focal point column above
+5. **Trend narrative**: Write a 300-500 word narrative on how the project has evolved, anchored in actual data
+6. **Save**: Write milestone report to `.rune/retros/{YYYY-MM-DD}-milestone-{name}.md`
+
+### Milestone Report Structure
+
+```markdown
+## Milestone: [name] — [date]
+
+### Evolution Timeline
+[ASCII chart or table showing key metrics across all retro snapshots]
+
+### [Focal Point] Analysis
+[300-500 words anchored in data — specific commits, files, metrics]
+
+### What's Working
+- [pattern that's improving, with evidence]
+
+### What Needs Attention
+- [pattern that's degrading, with evidence]
+
+### Recommendations
+- [1-3 concrete actions based on the focal analysis]
+```
+
+### Rules
+
+- Milestone analysis is **additive** — it runs ON TOP of the standard retro, not instead of it
+- Each milestone triggers ONCE — check if `.rune/retros/*-milestone-{name}.md` already exists before generating
+- If retro history is sparse (gaps >30 days), note this in the report — trends may be unreliable
+- Milestone analysis does NOT count toward the retro's normal output — it's a separate artifact
 
 ## Compare Mode
 
