@@ -521,6 +521,8 @@ a:hover { opacity: 0.85; }
 .compare-table tbody td:first-child { text-align: left; color: var(--text-primary); }
 .compare-table .check { color: var(--accent); font-weight: 700; font-size: 16px; }
 .compare-table .dash { color: var(--text-muted); }
+.compare-table .compare-featured td { background: rgba(167,139,250,0.06); font-weight: 500; }
+.compare-table .compare-featured td:first-child { color: #a78bfa; }
 .compare-table tbody tr:hover { background: rgba(31,45,61,0.03); }
 
 /* ─── EXTENSIONS ─── */
@@ -912,6 +914,12 @@ font[style] > font { vertical-align: unset !important; }
 }
 .mesh-pack span { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
 .mesh-pack em { color: #a78bfa; font-style: normal; font-weight: 600; }
+.mesh-pack-featured {
+  border-color: #a78bfa;
+  background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(167,139,250,0.02));
+  grid-column: 1 / -1;
+}
+.mesh-pack-featured strong { color: #a78bfa; }
 
 .mesh-tier-note {
   margin-top: 12px;
