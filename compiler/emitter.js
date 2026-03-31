@@ -274,12 +274,15 @@ async function applyInjections(body, rules) {
     try {
       const content = await readFile(refPath, 'utf-8');
       // Strip frontmatter if present
-      const cleaned = content.replace(/\r\n/g, '\n').replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
+      const cleaned = content
+        .replace(/\r\n/g, '\n')
+        .replace(/^---\n[\s\S]*?\n---\n?/, '')
+        .trim();
       blocks.push(
         `\n\n<!-- Pro Reference: ${rule.pack}/${rule.ref} -->\n` +
-        `<CONTEXT-INJECTION source="${rule.pack}" context="${rule.context}">\n` +
-        `${cleaned}\n` +
-        `</CONTEXT-INJECTION>`
+          `<CONTEXT-INJECTION source="${rule.pack}" context="${rule.context}">\n` +
+          `${cleaned}\n` +
+          `</CONTEXT-INJECTION>`,
       );
     } catch {
       // Unreadable reference — skip
@@ -641,8 +644,7 @@ export async function buildAll({
           'Pre-built multi-phase workflows for `cook --template <name>`:',
           '',
           ...templates.map(
-            (t) =>
-              `| \`${t.name}\` | ${t.parsed.description.slice(0, 100)} | chain: ${t.parsed.chain} |`,
+            (t) => `| \`${t.name}\` | ${t.parsed.description.slice(0, 100)} | chain: ${t.parsed.chain} |`,
           ),
           '',
           ...templates.map((t) => {

@@ -269,7 +269,12 @@ async function cmdDoctor(projectRoot, args) {
 async function cmdStatus(projectRoot, args) {
   const config = await readConfig(projectRoot);
   const tierSources = resolveTierSources(config?.tiers, projectRoot);
-  const runeRoot = config?.source === '@rune-kit/rune' ? RUNE_ROOT : config?.source ? path.resolve(projectRoot, config.source) : RUNE_ROOT;
+  const runeRoot =
+    config?.source === '@rune-kit/rune'
+      ? RUNE_ROOT
+      : config?.source
+        ? path.resolve(projectRoot, config.source)
+        : RUNE_ROOT;
   const platform = config?.platform || detectPlatform(projectRoot) || '';
 
   const pkg = JSON.parse(await readFile(path.join(RUNE_ROOT, 'package.json'), 'utf-8'));
@@ -289,12 +294,20 @@ async function cmdStatus(projectRoot, args) {
 async function cmdVisualize(projectRoot, args) {
   const config = await readConfig(projectRoot);
   const tierSources = resolveTierSources(config?.tiers, projectRoot);
-  const runeRoot = config?.source === '@rune-kit/rune' ? RUNE_ROOT : config?.source ? path.resolve(projectRoot, config.source) : RUNE_ROOT;
+  const runeRoot =
+    config?.source === '@rune-kit/rune'
+      ? RUNE_ROOT
+      : config?.source
+        ? path.resolve(projectRoot, config.source)
+        : RUNE_ROOT;
 
   logStep('◎', 'Collecting mesh data...');
   const graphData = await collectGraphData(runeRoot, tierSources);
 
-  logStep('◎', `Found ${graphData.stats.nodeCount} nodes, ${graphData.stats.edgeCount} edges, ${graphData.stats.signalCount} signals`);
+  logStep(
+    '◎',
+    `Found ${graphData.stats.nodeCount} nodes, ${graphData.stats.edgeCount} edges, ${graphData.stats.signalCount} signals`,
+  );
 
   const html = generateMeshHTML(graphData);
 
@@ -304,9 +317,7 @@ async function cmdVisualize(projectRoot, args) {
     await mkdirFs(runeDir, { recursive: true });
   }
 
-  const outputPath = args.output
-    ? path.resolve(projectRoot, args.output)
-    : path.join(runeDir, 'mesh.html');
+  const outputPath = args.output ? path.resolve(projectRoot, args.output) : path.join(runeDir, 'mesh.html');
 
   const { writeFile: writeFileFs } = await import('node:fs/promises');
   await writeFileFs(outputPath, html, 'utf-8');
@@ -318,11 +329,16 @@ async function cmdVisualize(projectRoot, args) {
     // Try to open in browser
     try {
       const { exec } = await import('node:child_process');
-      const cmd = process.platform === 'win32' ? `start "" "${outputPath}"`
-        : process.platform === 'darwin' ? `open "${outputPath}"`
-        : `xdg-open "${outputPath}"`;
+      const cmd =
+        process.platform === 'win32'
+          ? `start "" "${outputPath}"`
+          : process.platform === 'darwin'
+            ? `open "${outputPath}"`
+            : `xdg-open "${outputPath}"`;
       exec(cmd);
-    } catch { /* ignore if browser open fails */ }
+    } catch {
+      /* ignore if browser open fails */
+    }
   }
 }
 

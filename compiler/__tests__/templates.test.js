@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -69,14 +69,7 @@ describe('parseTemplate', () => {
   });
 
   test('handles no signals gracefully', () => {
-    const content = [
-      '---',
-      'name: no-signals',
-      'domain: test',
-      '---',
-      '',
-      '# Template without signals',
-    ].join('\n');
+    const content = ['---', 'name: no-signals', 'domain: test', '---', '', '# Template without signals'].join('\n');
 
     const parsed = parseTemplate(content);
     assert.deepStrictEqual(parsed.signals.emit, []);
@@ -84,13 +77,7 @@ describe('parseTemplate', () => {
   });
 
   test('handles no connections gracefully', () => {
-    const content = [
-      '---',
-      'name: no-connections',
-      '---',
-      '',
-      '# Template without connections',
-    ].join('\n');
+    const content = ['---', 'name: no-connections', '---', '', '# Template without connections'].join('\n');
 
     const parsed = parseTemplate(content);
     assert.deepStrictEqual(parsed.connections, []);
@@ -208,10 +195,7 @@ describe('Pro template files', () => {
           assert.ok(SIGNAL_NAME_PATTERN.test(signal), `emit signal "${signal}" must match lowercase.dot.notation`);
         }
         for (const signal of parsed.signals.listen) {
-          assert.ok(
-            SIGNAL_NAME_PATTERN.test(signal),
-            `listen signal "${signal}" must match lowercase.dot.notation`,
-          );
+          assert.ok(SIGNAL_NAME_PATTERN.test(signal), `listen signal "${signal}" must match lowercase.dot.notation`);
         }
       });
 

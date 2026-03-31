@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -293,9 +293,7 @@ describe('Business org-templates file validation', () => {
       });
 
       test('governance settings reference sentinel', () => {
-        const hasSentinel = parsed.governanceLevel.settings.some((s) =>
-          s.toLowerCase().includes('sentinel'),
-        );
+        const hasSentinel = parsed.governanceLevel.settings.some((s) => s.toLowerCase().includes('sentinel'));
         assert.ok(hasSentinel, 'Governance settings should reference sentinel mode');
       });
 
@@ -307,11 +305,7 @@ describe('Business org-templates file validation', () => {
         // All pack references should be @rune-pro/* or @rune-business/*
         const packRefs = content.match(/@rune-(?:pro|business)\/[\w-]+/g) || [];
         for (const ref of packRefs) {
-          assert.match(
-            ref,
-            /^@rune-(pro|business)\/[a-z][\w-]*$/,
-            `Invalid pack reference: ${ref}`,
-          );
+          assert.match(ref, /^@rune-(pro|business)\/[a-z][\w-]*$/, `Invalid pack reference: ${ref}`);
         }
       });
     });
@@ -391,10 +385,7 @@ describe('org template governance scaling', () => {
   test('enterprise governance settings are more comprehensive', () => {
     const sSettings = templateData.startup?.governanceLevel.settings.length || 0;
     const eSettings = templateData.enterprise?.governanceLevel.settings.length || 0;
-    assert.ok(
-      eSettings >= sSettings,
-      `enterprise settings (${eSettings}) should be >= startup (${sSettings})`,
-    );
+    assert.ok(eSettings >= sSettings, `enterprise settings (${eSettings}) should be >= startup (${sSettings})`);
   });
 });
 
@@ -422,18 +413,12 @@ describe('sentinel/preflight org policy integration', () => {
 
   test('sentinel handles missing org config gracefully', () => {
     const content = readFileSync(sentinelPath, 'utf-8');
-    assert.ok(
-      content.includes('no org config'),
-      'sentinel should handle missing org config',
-    );
+    assert.ok(content.includes('no org config'), 'sentinel should handle missing org config');
   });
 
   test('preflight references .rune/org/org.md', () => {
     const content = readFileSync(preflightPath, 'utf-8');
-    assert.ok(
-      content.includes('.rune/org/org.md'),
-      'preflight should reference .rune/org/org.md for org requirements',
-    );
+    assert.ok(content.includes('.rune/org/org.md'), 'preflight should reference .rune/org/org.md for org requirements');
   });
 
   test('preflight has Organization Approval Requirements step', () => {
@@ -446,25 +431,16 @@ describe('sentinel/preflight org policy integration', () => {
 
   test('preflight handles missing org config gracefully', () => {
     const content = readFileSync(preflightPath, 'utf-8');
-    assert.ok(
-      content.includes('no org config'),
-      'preflight should handle missing org config',
-    );
+    assert.ok(content.includes('no org config'), 'preflight should handle missing org config');
   });
 
   test('sentinel step is numbered 4.86 (between contract 4.85 and six-gate 4.9)', () => {
     const content = readFileSync(sentinelPath, 'utf-8');
-    assert.ok(
-      content.includes('Step 4.86'),
-      'sentinel org policy step should be numbered 4.86',
-    );
+    assert.ok(content.includes('Step 4.86'), 'sentinel org policy step should be numbered 4.86');
   });
 
   test('preflight step is numbered 4.6 (between domain hooks 4.5 and composite score 4.8)', () => {
     const content = readFileSync(preflightPath, 'utf-8');
-    assert.ok(
-      content.includes('Step 4.6'),
-      'preflight org requirements step should be numbered 4.6',
-    );
+    assert.ok(content.includes('Step 4.6'), 'preflight org requirements step should be numbered 4.6');
   });
 });

@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -71,10 +71,7 @@ describe('inject.json format validation', () => {
       test('target skills exist in Free core', () => {
         if (!config) return;
         for (const rule of config.injections) {
-          assert.ok(
-            knownSkills.has(rule.skill),
-            `target skill "${rule.skill}" not found in Free core skills`,
-          );
+          assert.ok(knownSkills.has(rule.skill), `target skill "${rule.skill}" not found in Free core skills`);
         }
       });
 

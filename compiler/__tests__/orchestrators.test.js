@@ -99,7 +99,10 @@ describe('Business orchestrators', () => {
         const body = parsed.body;
         const domains = ['finance', 'legal', 'hr', 'product', 'sales', 'support', 'enterprise-search', 'data-science'];
         const referencedDomains = domains.filter((d) => body.toLowerCase().includes(d));
-        assert.ok(referencedDomains.length >= 3, `${name} must reference at least 3 domains, found: ${referencedDomains.join(', ')}`);
+        assert.ok(
+          referencedDomains.length >= 3,
+          `${name} must reference at least 3 domains, found: ${referencedDomains.join(', ')}`,
+        );
       });
 
       test('emits business.* signals', () => {

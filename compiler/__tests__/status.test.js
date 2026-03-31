@@ -273,9 +273,7 @@ describe('renderStatusJson', () => {
 
   test('includes project info when provided', async () => {
     const stats = await collectStats(RUNE_ROOT);
-    const parsed = JSON.parse(
-      renderStatusJson(stats, { version: '2.6.0', platform: 'cursor', projectName: 'test' }),
-    );
+    const parsed = JSON.parse(renderStatusJson(stats, { version: '2.6.0', platform: 'cursor', projectName: 'test' }));
     assert.strictEqual(parsed.project, 'test');
     assert.strictEqual(parsed.platform, 'cursor');
     assert.strictEqual(parsed.version, '2.6.0');
@@ -317,9 +315,7 @@ describe('box rendering', () => {
     const stats = await collectStats(RUNE_ROOT);
     const output = renderStatus(stats);
     const lines = output.split('\n');
-    const boxLines = lines.filter(
-      (l) => l.startsWith('│') || l.startsWith('╭') || l.startsWith('╰'),
-    );
+    const boxLines = lines.filter((l) => l.startsWith('│') || l.startsWith('╭') || l.startsWith('╰'));
 
     for (const line of boxLines) {
       const lastChar = line.trimEnd().slice(-1);

@@ -214,10 +214,7 @@ describe('retro skill --business integration', () => {
   });
 
   test('retro --business references org config', () => {
-    assert.ok(
-      content.includes('.rune/org/org.md'),
-      'retro --business should reference org config',
-    );
+    assert.ok(content.includes('.rune/org/org.md'), 'retro --business should reference org config');
   });
 
   test('retro --business has graceful degradation', () => {
@@ -228,10 +225,7 @@ describe('retro skill --business integration', () => {
   });
 
   test('retro --business references report template', () => {
-    assert.ok(
-      content.includes('retro-business.html'),
-      'retro should reference the HTML template file',
-    );
+    assert.ok(content.includes('retro-business.html'), 'retro should reference the HTML template file');
   });
 });
 
@@ -265,17 +259,11 @@ describe('autopsy skill --executive integration', () => {
   });
 
   test('autopsy --executive references org config', () => {
-    assert.ok(
-      content.includes('.rune/org/org.md'),
-      'autopsy --executive should reference org config for team mapping',
-    );
+    assert.ok(content.includes('.rune/org/org.md'), 'autopsy --executive should reference org config for team mapping');
   });
 
   test('autopsy --executive references report template', () => {
-    assert.ok(
-      content.includes('autopsy-executive.html'),
-      'autopsy should reference the HTML template file',
-    );
+    assert.ok(content.includes('autopsy-executive.html'), 'autopsy should reference the HTML template file');
   });
 
   test('autopsy --executive has cross-domain impact', () => {
