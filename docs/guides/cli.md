@@ -1,6 +1,6 @@
 # Rune CLI
 
-The Rune CLI compiles 55 AI coding skills into any IDE platform. One skill mesh, every editor.
+The Rune CLI compiles 61 AI coding skills into any IDE platform. One skill mesh, every editor.
 
 ---
 
@@ -31,7 +31,7 @@ claude
 npx @rune-kit/rune doctor
 ```
 
-That's it. 55 skills are now active in your AI assistant.
+That's it. 61 skills are now active in your AI assistant.
 
 > **Pro Tip**: For Claude Code, skip the CLI entirely. Install Rune as a plugin:
 > `claude plugin add rune-kit/rune` -- skills load natively with zero compilation.
@@ -55,7 +55,7 @@ npx @rune-kit/rune init
 
   -> Detected: cursor
   -> Created rune.config.json
-  -> Built 55 skills + 12 extensions to .cursor/rules/
+  -> Built 61 skills + 14 extensions to .cursor/rules/
 ```
 
 **Flags**:
@@ -83,7 +83,7 @@ npx @rune-kit/rune build
   [transform] Platform: cursor
   [transform] Resolved 142 cross-references
   [transform] Resolved 87 tool-name references
-  [emit]      55 skills + 12 extensions
+  [emit]      61 skills + 14 extensions
 
   -> Built 67 files to .cursor/rules/
 ```
@@ -130,7 +130,7 @@ npx @rune-kit/rune help
 
 ## Platforms
 
-Rune compiles to 5 platforms. Each gets skills in its native format.
+Rune compiles to 8 platforms. Each gets skills in its native format.
 
 | Platform | Output Directory | File Format | Detection Marker |
 |----------|-----------------|-------------|------------------|
@@ -138,6 +138,8 @@ Rune compiles to 5 platforms. Each gets skills in its native format.
 | Cursor | `.cursor/rules/` | `.mdc` | `.cursor/` |
 | Windsurf | `.windsurf/rules/` | `.md` | `.windsurf/` |
 | Antigravity | `.agent/rules/` | `.md` | `.agent/` |
+| Codex | `.codex/` | `.md` | `.codex/` |
+| OpenCode | `.opencode/rules/` | `.md` | `.opencode/` |
 | Generic | `.ai/rules/` | `.md` | _(fallback)_ |
 | OpenClaw | `.openclaw/rune/` | `.md` + manifest | `.openclaw/` |
 
@@ -300,22 +302,24 @@ Edit this file directly, then run `rune build` to recompile.
 
 ## Extension Packs
 
-Rune ships 12 free extension packs (L4 layer). Each adds domain-specific skills.
+Rune ships 14 free extension packs (L4 layer). Each adds domain-specific skills.
 
 | Pack | Skills | Domain |
 |------|--------|--------|
-| `@rune/ui` | 5 | UI component patterns, design systems |
-| `@rune/backend` | 5 | API design, database patterns, auth |
-| `@rune/devops` | 7 | CI/CD, Docker, Kubernetes, chaos testing |
-| `@rune/mobile` | 5 | React Native, Flutter, mobile UX |
-| `@rune/security` | 5 | OWASP, pen testing, threat modeling |
+| `@rune/ui` | 10 | UI component patterns, design systems, accessibility |
+| `@rune/backend` | 8 | API design, database patterns, auth, caching |
+| `@rune/devops` | 9 | CI/CD, Docker, Kubernetes, edge/serverless |
+| `@rune/mobile` | 9 | React Native, Flutter, deep linking, OTA |
+| `@rune/security` | 7 | OWASP, pen testing, threat modeling, supply chain |
 | `@rune/trading` | 7 | Backtesting, quant analysis, market data |
-| `@rune/saas` | 5 | Multi-tenancy, billing, onboarding |
-| `@rune/ecommerce` | 5 | Cart, checkout, inventory, payments |
-| `@rune/ai-ml` | 6 | LLM architecture, prompt patterns, ML ops |
-| `@rune/gamedev` | 5 | Game loops, ECS, physics, assets |
-| `@rune/content` | 5 | CMS, SEO, content pipelines |
-| `@rune/analytics` | 5 | SQL patterns, data validation, dashboards |
+| `@rune/saas` | 6 | Multi-tenancy, billing, onboarding, feature flags |
+| `@rune/ecommerce` | 7 | Cart, checkout, inventory, payments, tax |
+| `@rune/ai-ml` | 10 | LLM architecture, prompt patterns, RAG, agents |
+| `@rune/gamedev` | 12 | Game loops, ECS, physics, multiplayer, audio |
+| `@rune/content` | 8 | CMS, SEO, i18n, MDX, video repurpose |
+| `@rune/analytics` | 7 | SQL patterns, A/B testing, funnels, dashboards |
+| `@rune/chrome-ext` | 6 | MV3 scaffold, messaging, storage, CWS publish |
+| `@rune/zalo` | 7 | Zalo OA messaging, webhooks, rate limiting |
 
 **Enable specific packs**:
 

@@ -168,7 +168,7 @@ async function cmdInit(projectRoot, args) {
   log('  Next steps:');
   log('    1. /rune onboard       Generate project context (CLAUDE.md + .rune/)');
   log('    2. /rune cook "..."    Build a feature (full TDD cycle)');
-  log('    3. /rune help          See all 59 skills');
+  log('    3. /rune help          See all 61 skills');
   log('');
 }
 
