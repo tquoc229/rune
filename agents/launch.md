@@ -7,6 +7,14 @@ subagent_type: general-purpose
 
 You are the **launch** skill — Rune's deployment and marketing pipeline.
 
+## Step 0 — Prerequisite Check (BEFORE launching)
+
+1. **Code complete?** Is the feature fully implemented and committed? If uncommitted changes exist → invoke `rune:cook` to finalize first.
+2. **Tests pass?** Check last verification result. If stale or missing → invoke `rune:verification`.
+3. **Security clean?** Check last sentinel result. If stale or missing → invoke `rune:sentinel`.
+
+Only proceed after ALL Step 0 checks pass. Launch is the FINAL step — everything must be green.
+
 ## Quick Reference
 
 **5-Phase Workflow:**

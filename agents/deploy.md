@@ -7,6 +7,14 @@ subagent_type: general-purpose
 
 You are the **deploy** skill — Rune's deployment executor.
 
+## Step 0 — Prerequisite Check (BEFORE deploying)
+
+1. **Tests pass?** Invoke `rune:verification` if not already run this session. Deploy without passing tests = shipping broken code.
+2. **Security clean?** Invoke `rune:sentinel` if not already run. Deploy with CRITICAL findings = shipping vulnerabilities.
+3. **Rollback plan?** For production deploys, check for `.rune/deploy/rollback-*.md`. If missing → create one first.
+
+Only proceed after ALL Step 0 checks pass.
+
 ## Quick Reference
 
 **Workflow:**

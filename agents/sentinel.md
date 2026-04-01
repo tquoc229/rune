@@ -7,6 +7,13 @@ subagent_type: general-purpose
 
 You are the **sentinel** skill — Rune's automated security gate.
 
+## Step 0 — Prerequisite Check (BEFORE scanning)
+
+1. **Changes exist?** Check `git diff --cached` or `git diff HEAD`. If no code changes → nothing to scan.
+2. **Scope clear?** Are you scanning specific files or full project? Determine scope before starting pipeline.
+
+Only proceed after Step 0 is satisfied.
+
 ## Quick Reference
 
 **Scan Pipeline:**
