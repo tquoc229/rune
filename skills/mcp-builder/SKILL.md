@@ -3,7 +3,7 @@ name: mcp-builder
 description: Build Model Context Protocol servers from specifications. Generates tool definitions, resource handlers, and test suites for MCP servers in TypeScript or Python (FastMCP).
 metadata:
   author: runedev
-  version: "0.3.0"
+  version: "0.4.0"
   layer: L2
   model: sonnet
   group: creation
@@ -321,6 +321,58 @@ mcp-server-<name>/
 - Installation: Claude Code, Cursor, Windsurf config snippets
 - Configuration reference (env vars with descriptions)
 
+## Reference Pattern: Multi-Provider Adapter
+
+When the MCP server needs to call multiple AI providers (e.g., both Anthropic and OpenAI), use the **Provider Adapter** pattern to normalize different APIs behind a unified interface.
+
+### Interface
+
+```typescript
+interface ProviderAdapter {
+  formatRequest(params: RequestParams): { url: string; init: RequestInit };
+  parseResponse(data: unknown): { content: string; usage: TokenUsage | null };
+  formatStreamRequest(params: RequestParams): { url: string; init: RequestInit };
+  parseSSEEvent(eventType: string, data: string): StreamChunk | null;
+}
+```
+
+### Discriminated Union for Stream Chunks
+
+```typescript
+type StreamChunk =
+  | { type: "thinking"; content: string }
+  | { type: "text"; content: string }
+  | { type: "done" }
+  | { type: "done_with_usage"; usage: TokenUsage }
+  | { type: "usage_delta"; inputTokens?: number; outputTokens?: number }
+  | { type: "error"; message: string };
+```
+
+### When to Apply
+
+- MCP server wraps multiple AI providers (e.g., a router server that dispatches to Claude, GPT, or local models)
+- MCP server aggregates responses from multiple APIs with different response formats
+- MCP server needs to support streaming from providers with different SSE event schemas
+
+### Key Implementation Notes
+
+- Each provider adapter handles its own SSE event types (Anthropic: `content_block_delta`, `message_start`; OpenAI: `response.output_text.delta`, `[DONE]`)
+- Buffer management for SSE: handle incomplete lines, track event types, manage abort signals
+- Provider-specific prompt tuning: some models benefit from additional constraints (e.g., "Maximum 2-3 paragraphs" for verbose models)
+- Per-provider token tracking: normalize different usage reporting formats into a single `TokenUsage` type
+
+### Cost-Aware Model Selection
+
+When building MCP servers that call AI providers, support **dual-model configuration** — allow users to specify a primary model for critical operations and a cheaper model for background tasks (summarization, classification, metadata extraction). This avoids burning expensive API credits on tasks that don't need maximum quality.
+
+```typescript
+// config.ts
+const config = {
+  primaryModel: process.env.PRIMARY_MODEL || 'claude-sonnet-4-20250514',
+  backgroundModel: process.env.BACKGROUND_MODEL || 'claude-haiku-4-5-20251001',
+};
+```
+
 ## Constraints
 
 1. MUST validate all tool inputs with Zod (TS) or Pydantic (Python) — never trust AI-provided inputs
@@ -353,6 +405,19 @@ mcp-server-<name>/
 - Verification passed (types + tests)
 - Ready to install in Claude Code / Cursor / other IDEs
 
+## Returns
+
+| Artifact | Format | Location |
+|----------|--------|----------|
+| MCP server source code | TypeScript or Python | `mcp-server-<name>/src/` |
+| Tool definitions (one per tool) | TS/Python files | `src/tools/<name>.ts` or `.py` |
+| Resource handlers | TS/Python files | `src/resources/<name>.ts` or `.py` |
+| Test suite | TS/Python test files | `tests/` |
+| README with tool catalog | Markdown | `mcp-server-<name>/README.md` |
+| Environment config template | `.env.example` | project root |
+
 ## Cost Profile
 
 ~3000-6000 tokens input, ~2000-5000 tokens output. Sonnet — MCP server generation is a structured code task, not architectural reasoning.
+
+**Scope guardrail:** mcp-builder generates the server and tests — it does not deploy, register with MCP registries, or configure the host IDE beyond providing the installation snippet.

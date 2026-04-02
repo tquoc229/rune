@@ -13,7 +13,7 @@
  * Hook: runs via doctor command or pre-publish
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -47,9 +47,76 @@ if (pkg.version === plugin.version) {
   fail(`Version mismatch: package.json=${pkg.version} vs plugin.json=${plugin.version}`);
 }
 
+// 1b. Version in docs/content files
+const versionFiles = [
+  { path: 'docs/index.html', pattern: /v(\d+\.\d+\.\d+)\s*&mdash;/ },
+  { path: 'ROADMAP.md', pattern: /Version:\s*(\d+\.\d+\.\d+)/ },
+  { path: 'README.md', pattern: /What's New \(v(\d+\.\d+\.\d+)\)/ },
+];
+
+for (const { path, pattern } of versionFiles) {
+  const filePath = join(ROOT, path);
+  if (!existsSync(filePath)) continue;
+  const content = readFileSync(filePath, 'utf8');
+  const match = content.match(pattern);
+  if (!match) {
+    warn(`${path}: no version pattern found`);
+  } else if (match[1] !== pkg.version) {
+    fail(`${path}: shows v${match[1]}, expected v${pkg.version}`);
+  } else {
+    pass(`${path}: v${match[1]}`);
+  }
+}
+
+// 1c. marketplace.json version
+const marketplacePath = join(ROOT, '.claude-plugin/marketplace.json');
+if (existsSync(marketplacePath)) {
+  const marketplace = JSON.parse(readFileSync(marketplacePath, 'utf8'));
+  const mpPlugin = marketplace.plugins?.find((p) => p.name === 'rune');
+  if (mpPlugin) {
+    if (mpPlugin.version === pkg.version) {
+      pass(`marketplace.json: v${mpPlugin.version}`);
+    } else {
+      fail(`marketplace.json: shows v${mpPlugin.version}, expected v${pkg.version}`);
+    }
+  } else {
+    warn('marketplace.json: no "rune" plugin entry found');
+  }
+}
+
+// 1d. Skill count consistency across docs
+const skillsDir2 = join(ROOT, 'skills');
+if (existsSync(skillsDir2)) {
+  const actualSkillCount = readdirSync(skillsDir2, { withFileTypes: true }).filter(
+    (d) => d.isDirectory() && existsSync(join(skillsDir2, d.name, 'SKILL.md')),
+  ).length;
+
+  const skillCountFiles = [
+    { path: 'docs/index.html', pattern: /data-target="(\d+)"[\s\S]*?Core Skills/m },
+    { path: 'docs/index.html', pattern: /(\d+) core skills \(L0/ },
+    { path: 'docs/index.html', pattern: /Core dev skills \((\d+)\)/ },
+    { path: 'README.md', pattern: /^\s*(\d+) skills · \d+\+ mesh/m },
+    { path: 'CLAUDE.md', pattern: /(\d+) core skills built/ },
+  ];
+
+  for (const { path, pattern } of skillCountFiles) {
+    const filePath = join(ROOT, path);
+    if (!existsSync(filePath)) continue;
+    const content = readFileSync(filePath, 'utf8');
+    const match = content.match(pattern);
+    if (!match) continue;
+    const found = parseInt(match[1], 10);
+    if (found === actualSkillCount) {
+      pass(`${path}: ${found} skills`);
+    } else {
+      fail(`${path}: shows ${found} skills, actual is ${actualSkillCount}`);
+    }
+  }
+}
+
 // 2. npm registry check (non-blocking, just warn)
 try {
-  const npmVersion = execSync(`npm view ${pkg.name} version`, {
+  const npmVersion = execFileSync('npm', ['view', pkg.name, 'version'], {
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
   }).trim();

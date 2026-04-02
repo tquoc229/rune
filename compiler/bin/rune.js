@@ -7,6 +7,8 @@
  *   rune init    — Interactive setup for a new project
  *   rune build   — Compile skills for the configured platform
  *   rune doctor  — Validate compiled output
+ *   rune status  — Project dashboard (neofetch-style)
+ *   rune visualize — Interactive mesh graph
  */
 
 import { existsSync } from 'node:fs';
@@ -17,6 +19,8 @@ import { fileURLToPath } from 'node:url';
 import { getAdapter, listPlatforms } from '../adapters/index.js';
 import { formatDoctorResults, runDoctor } from '../doctor.js';
 import { buildAll } from '../emitter.js';
+import { collectStats, renderStatus, renderStatusJson } from '../status.js';
+import { collectGraphData, generateMeshHTML } from '../visualizer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,6 +67,28 @@ async function prompt(question) {
       resolve(answer.trim());
     });
   });
+}
+
+/**
+ * Resolve tier source paths from config.
+ * Paths can be absolute or relative to projectRoot.
+ *
+ * Config format:
+ *   "tiers": { "pro": "../Pro/extensions", "business": "../Business/extensions" }
+ *
+ * @param {Object} tiers - tier config object
+ * @param {string} projectRoot - base for relative paths
+ * @returns {Object} resolved { pro?: string, business?: string }
+ */
+function resolveTierSources(tiers, projectRoot) {
+  if (!tiers) return {};
+  const resolved = {};
+  for (const tier of ['pro', 'business']) {
+    if (tiers[tier]) {
+      resolved[tier] = path.resolve(projectRoot, tiers[tier]);
+    }
+  }
+  return resolved;
 }
 
 // ─── Commands ───
@@ -120,12 +146,14 @@ async function cmdInit(projectRoot, args) {
 
   // Auto-build
   const adapter = getAdapter(platform);
+  const tierSources = resolveTierSources(config.tiers, projectRoot);
   const stats = await buildAll({
     runeRoot: RUNE_ROOT,
     outputRoot: projectRoot,
     adapter,
     disabledSkills: config.skills.disabled,
     enabledPacks: config.extensions.enabled,
+    tierSources,
   });
 
   logStep('✓', `Built ${stats.skillCount} skills + ${stats.packCount} extensions to ${adapter.outputDir}/`);
@@ -140,7 +168,7 @@ async function cmdInit(projectRoot, args) {
   log('  Next steps:');
   log('    1. /rune onboard       Generate project context (CLAUDE.md + .rune/)');
   log('    2. /rune cook "..."    Build a feature (full TDD cycle)');
-  log('    3. /rune help          See all 58 skills');
+  log('    3. /rune help          See all 61 skills');
   log('');
 }
 
@@ -163,6 +191,7 @@ async function cmdBuild(projectRoot, args) {
   const outputRoot = typeof args.output === 'string' ? args.output : projectRoot;
   const disabledSkills = config?.skills?.disabled || [];
   const enabledPacks = config?.extensions?.enabled || null;
+  const tierSources = resolveTierSources(config?.tiers, projectRoot);
 
   log('');
   log(`  [parse]     Discovering skills...`);
@@ -173,12 +202,20 @@ async function cmdBuild(projectRoot, args) {
     adapter,
     disabledSkills,
     enabledPacks,
+    tierSources,
   });
 
   log(`  [transform] Platform: ${stats.platform}`);
   log(`  [transform] Resolved ${stats.crossRefsResolved} cross-references`);
   log(`  [transform] Resolved ${stats.toolRefsResolved} tool-name references`);
   log(`  [emit]      ${stats.skillCount} skills + ${stats.packCount} extensions`);
+
+  if (stats.tierOverrides?.length > 0) {
+    log(`  [tier]      ${stats.tierOverrides.length} pack(s) resolved from higher tiers:`);
+    for (const override of stats.tierOverrides) {
+      log(`              → ${override.pack} (${override.tier})`);
+    }
+  }
 
   if (stats.skipped.length > 0) {
     log(`  [skip]      ${stats.skipped.length} disabled: ${stats.skipped.join(', ')}`);
@@ -227,6 +264,82 @@ async function cmdDoctor(projectRoot, args) {
   log(formatDoctorResults(results));
 
   if (!results.healthy) process.exit(1);
+}
+
+async function cmdStatus(projectRoot, args) {
+  const config = await readConfig(projectRoot);
+  const tierSources = resolveTierSources(config?.tiers, projectRoot);
+  const runeRoot =
+    config?.source === '@rune-kit/rune'
+      ? RUNE_ROOT
+      : config?.source
+        ? path.resolve(projectRoot, config.source)
+        : RUNE_ROOT;
+  const platform = config?.platform || detectPlatform(projectRoot) || '';
+
+  const pkg = JSON.parse(await readFile(path.join(RUNE_ROOT, 'package.json'), 'utf-8'));
+  const projectName = path.basename(projectRoot);
+
+  const stats = await collectStats(runeRoot, tierSources);
+
+  if (args.json) {
+    log(renderStatusJson(stats, { version: pkg.version, platform, projectName }));
+  } else {
+    log('');
+    log(renderStatus(stats, { version: pkg.version, platform, projectName }));
+    log('');
+  }
+}
+
+async function cmdVisualize(projectRoot, args) {
+  const config = await readConfig(projectRoot);
+  const tierSources = resolveTierSources(config?.tiers, projectRoot);
+  const runeRoot =
+    config?.source === '@rune-kit/rune'
+      ? RUNE_ROOT
+      : config?.source
+        ? path.resolve(projectRoot, config.source)
+        : RUNE_ROOT;
+
+  logStep('◎', 'Collecting mesh data...');
+  const graphData = await collectGraphData(runeRoot, tierSources);
+
+  logStep(
+    '◎',
+    `Found ${graphData.stats.nodeCount} nodes, ${graphData.stats.edgeCount} edges, ${graphData.stats.signalCount} signals`,
+  );
+
+  const html = generateMeshHTML(graphData);
+
+  const runeDir = path.join(projectRoot, '.rune');
+  if (!existsSync(runeDir)) {
+    const { mkdir: mkdirFs } = await import('node:fs/promises');
+    await mkdirFs(runeDir, { recursive: true });
+  }
+
+  const outputPath = args.output ? path.resolve(projectRoot, args.output) : path.join(runeDir, 'mesh.html');
+
+  const { writeFile: writeFileFs } = await import('node:fs/promises');
+  await writeFileFs(outputPath, html, 'utf-8');
+  logStep('✓', `Mesh visualization written to ${path.relative(projectRoot, outputPath)}`);
+
+  if (args.json) {
+    log(JSON.stringify(graphData, null, 2));
+  } else {
+    // Try to open in browser
+    try {
+      const { exec } = await import('node:child_process');
+      const cmd =
+        process.platform === 'win32'
+          ? `start "" "${outputPath}"`
+          : process.platform === 'darwin'
+            ? `open "${outputPath}"`
+            : `xdg-open "${outputPath}"`;
+      exec(cmd);
+    } catch {
+      /* ignore if browser open fails */
+    }
+  }
 }
 
 // ─── Arg Parsing ───
@@ -283,6 +396,13 @@ async function main() {
     case 'doctor':
       await cmdDoctor(projectRoot, args);
       break;
+    case 'status':
+      await cmdStatus(projectRoot, args);
+      break;
+    case 'visualize':
+    case 'viz':
+      await cmdVisualize(projectRoot, args);
+      break;
     case 'version':
     case '--version':
     case '-v': {
@@ -300,6 +420,8 @@ async function main() {
       log('    init     Interactive setup (auto-detects platform)');
       log('    build    Compile skills for configured platform');
       log('    doctor   Validate compiled output');
+      log('    status   Project dashboard (skills, signals, packs, health)');
+      log('    visualize  Interactive mesh graph (opens in browser)');
       log('');
       log('  Options:');
       log(

@@ -3,7 +3,7 @@ name: perf
 description: Performance regression gate. Detects N+1 queries, sync-in-async, missing indexes, memory leaks, and bundle bloat before they reach production.
 metadata:
   author: runedev
-  version: "0.1.0"
+  version: "0.3.0"
   layer: L2
   model: sonnet
   group: quality
@@ -37,6 +37,11 @@ Performance regression gate. Analyzes code changes for patterns that cause measu
 - `audit` (L2): performance dimension delegation
 - `review` (L2): performance patterns detected in diff
 - `deploy` (L2): pre-deploy perf regression check
+
+## References
+
+- `references/cost-reference.md` — Cost priority hierarchy, quick wins checklist, instance right-sizing, data transfer traps, serverless optimization, observability cost control, managed vs self-hosted matrix, unit economics tracking. Load when cost analysis or FinOps context detected.
+- `references/scalability-reference.md` — Bottleneck identification flow, performance thresholds, API patterns (cursor pagination, rate limiting, circuit breaker, graceful shutdown), caching strategies, queue-based load leveling, concurrency patterns, K8s HPA, CDN headers, load testing. Load when scaling or infrastructure optimization context detected.
 
 ## Executable Steps
 
@@ -237,6 +242,39 @@ Emit structured report:
 ### Verdict: PASS | WARN | BLOCK
 ```
 
+### Step 8.5 — Token Budget Tracking (AI-Powered Apps)
+
+For projects that call AI APIs (detected via imports of `anthropic`, `openai`, `@anthropic-ai/sdk`, `@ai-sdk/core`, `langchain`, `llamaindex`, or `fastmcp`), audit token usage patterns per operation type.
+
+**Scan for:**
+
+| Pattern | Finding | Impact |
+|---------|---------|--------|
+| AI call inside a loop without batching | `TOKEN_LOOP — [file:line] — AI call in loop over [collection] — batch or parallelize` | Cost scales linearly with collection size |
+| No token usage tracking | `NO_TOKEN_TRACKING — [file:line] — AI response usage not captured — add cost logging` | Invisible spend, no budget control |
+| Expensive model for simple tasks | `MODEL_MISMATCH — [file:line] — using [opus/gpt-4] for [classification/extraction] — use [haiku/gpt-4.1-mini]` | 10-30x cost difference for same result |
+| Missing max_tokens on open-ended prompts | `UNBOUNDED_TOKENS — [file:line] — no max_tokens on [call] — add limit to prevent runaway cost` | Single call can consume entire budget |
+| Duplicate AI calls for same input | `DUPLICATE_AI_CALL — [file:line] — same prompt sent to [provider] without caching — add response cache` | Wasted tokens on redundant calls |
+
+**Per-Operation Cost Awareness:**
+
+When token tracking IS present, analyze the operation type breakdown:
+
+```
+Operation Type          Avg Tokens    Frequency    Monthly Est.
+─────────────────────────────────────────────────────────────
+Chat (primary)          2,500 in/800 out    high         $X.XX
+Background notes        500 in/200 out      per-chat     $X.XX
+Summarization           1,500 in/300 out    periodic     $X.XX
+Classification          200 in/50 out       high         $X.XX
+─────────────────────────────────────────────────────────────
+Total estimated monthly                                  $X.XX
+```
+
+**Report this under a `### AI Token Budget` subsection** in the Perf Report. Only include when AI API usage detected — skip entirely for non-AI projects.
+
+**Key insight**: The most impactful optimization is often **model selection per operation** — using a cheaper model for background tasks (summarization, classification, metadata extraction) while reserving expensive models for primary user-facing interactions. A 10x cost reduction on 60% of calls = 6x overall savings.
+
 ## Output Format
 
 ```
@@ -292,6 +330,17 @@ Known failure modes for this skill. Check these before declaring done.
 - Benchmark scripts ran (if configured) or INFO: skipped
 - Perf Report emitted with PASS/WARN/BLOCK verdict
 
+## Returns
+
+| Artifact | Format | Location |
+|----------|--------|----------|
+| Perf Report with verdict | Markdown (PASS/WARN/BLOCK) | inline |
+| Per-finding details | Structured list (file:line + impact) | inline |
+| Lighthouse scores (if ran) | Score table | inline |
+| Framework-specific findings | Categorized list | inline |
+
 ## Cost Profile
 
 ~3000-8000 tokens input, ~500-1500 tokens output. Sonnet for pattern recognition.
+
+**Scope guardrail:** perf investigates and reports only — it does not fix code. All fixes are delegated to `fix` (L2) after the report is reviewed.

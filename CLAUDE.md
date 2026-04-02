@@ -3,7 +3,7 @@
 ## Overview
 
 Rune is an interconnected skill ecosystem for AI coding assistants.
-58 core skills | 5-layer mesh architecture | 200+ connections | Multi-platform.
+61 core skills | 5-layer mesh architecture | 200+ connections | Multi-platform.
 Philosophy: "Less skills. Deeper connections."
 
 Works on: Claude Code (native plugin) · Cursor · Windsurf · Google Antigravity · OpenAI Codex · OpenCode · any AI IDE.
@@ -41,6 +41,33 @@ rune/
 └── docs/               # Documentation, templates, and plans
 ```
 
+## Mandatory Skill Routing
+
+**ALWAYS invoke skills via the Skill tool. NEVER "mentally apply" a skill or do the work casually.**
+
+When the user's intent matches a skill, invoke it BEFORE writing any code or analysis:
+
+| User Intent | Invoke | NOT This |
+|-------------|--------|----------|
+| "brainstorm", "ideas", "explore options" | `rune:brainstorm` | Casually listing ideas without framework |
+| "plan", "design architecture", "break this down" | `rune:plan` | Writing an inline plan without phase files |
+| "build", "implement", "fix", "refactor", "add feature" | `rune:cook` | Writing code without scout/plan/test cycle |
+| "review", "check this code" | `rune:review` | Skimming code without file:line findings |
+| "test", "write tests" | `rune:test` | Writing tests after implementation (TDD violation) |
+| "deploy", "ship", "go live" | `rune:launch` | Running deploy without pre-flight verification |
+| "debug", "why is this broken" | `rune:debug` | Guessing at fixes without hypothesis testing |
+| "security check", "audit security" | `rune:sentinel` | Surface-level security comments |
+| "research", "find out about" | `rune:research` | Single-source answers without triangulation |
+| "new project", "bootstrap", "scaffold" | `rune:scaffold` | Creating files without requirements/plan |
+| Large task (5+ files, 3+ modules) | `rune:team` | Sequential cook on parallel-eligible work |
+| Legacy cleanup (health <40) | `rune:rescue` | Ad-hoc refactoring without safety nets |
+
+**Workflow chains are enforced by each skill's Step 0 prerequisite check:**
+- `cook` → checks for approved plan (invokes `plan` if missing)
+- `plan` → checks for codebase context (invokes `scout` if missing)
+- `fix` → checks for diagnosis (invokes `debug` if missing)
+- `deploy` → checks for passing tests + security (invokes `verification` + `sentinel` if missing)
+
 ## Conventions
 
 - Every skill MUST have a SKILL.md following docs/SKILL-TEMPLATE.md
@@ -60,14 +87,17 @@ rune/
 - Build for Codex: `node compiler/bin/rune.js build --platform codex --output <project-dir>`
 - Build for OpenCode: `node compiler/bin/rune.js build --platform opencode --output <project-dir>`
 - Validate build: `node compiler/bin/rune.js doctor`
-- Run tests: `npm test` (84 tests — parser, adapters, transforms, transformer)
+- Project dashboard: `node compiler/bin/rune.js status` (tiered neofetch)
+- Mesh visualizer: `node compiler/bin/rune.js visualize` (interactive graph)
+- Run tests: `npm test` (946 tests — compiler + signals + hooks + scripts + status + visualizer)
+- Run tests with coverage: `npm run test:coverage` (c8 + lcov)
 - Lint: `npm run lint` (Biome)
 - Lint + fix: `npm run lint:fix`
 - Full CI check: `npm run ci` (lint + test + doctor)
 
 ## Current Wave
 
-58 core skills built (v2.2.1 — "The Missing Pieces").
+61 core skills built (v2.8.0 — "Anti-Loop Intelligence").
 
 ### L0 Router (1)
 skill-router — meta-enforcement layer, routes every action through the correct skill
@@ -75,17 +105,17 @@ skill-router — meta-enforcement layer, routes every action through the correct
 ### L1 Orchestrators (5)
 cook, team, launch, rescue, scaffold
 
-### L2 Workflow Hubs (27)
+### L2 Workflow Hubs (28)
 plan, scout, brainstorm, design, skill-forge, debug, fix, test, review, db,
 sentinel, preflight, onboard, deploy, marketing, perf,
 autopsy, safeguard, surgeon, audit, incident, review-intake, logic-guardian,
-ba, docs, mcp-builder, adversary
+ba, docs, mcp-builder, adversary, retro
 
-### L3 Utilities (25)
+### L3 Utilities (27)
 research, docs-seeker, trend-scout, problem-solver, sequential-thinking,
 verification, hallucination-guard, completion-gate, constraint-check, sast, integrity-check,
-context-engine, journal, session-bridge, neural-memory, worktree,
-watchdog, scope-guard, browser-pilot, asset-creator, video-creator,
+context-engine, context-pack, journal, session-bridge, neural-memory, worktree,
+watchdog, scope-guard, browser-pilot, asset-creator, video-creator, slides,
 dependency-doctor, git, doc-processor, sentinel-env
 
 ### L4 Extension Packs (14)
@@ -103,7 +133,7 @@ Pro packs use same PACK.md format, install into `extensions/pro-*/`.
 
 ### Rune Business (Enterprise Extensions — separate private repo)
 Repository: https://github.com/rune-kit/rune-business (private)
-@rune-pro/finance (✅), @rune-pro/legal (✅), @rune-pro/hr (✅), @rune-pro/enterprise-search (✅)
+@rune-business/finance (✅), @rune-business/legal (✅), @rune-business/hr (✅), @rune-business/enterprise-search (✅)
 4 packs, 26 skills. $149 lifetime.
 
 ## Full Spec

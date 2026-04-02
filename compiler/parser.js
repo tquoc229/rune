@@ -5,6 +5,12 @@
  * Extracts frontmatter, cross-references, tool references, HARD-GATE blocks, and sections.
  */
 
+/**
+ * Metadata fields that should be parsed as comma-separated arrays
+ * e.g. emit: code.changed, tests.passed → ["code.changed", "tests.passed"]
+ */
+const COMMA_LIST_FIELDS = new Set(['emit', 'listen']);
+
 const CROSS_REF_PATTERN = /`?rune:([a-z][\w-]*)`?/g;
 const TOOL_REF_PATTERN = /`(Read|Write|Edit|Glob|Grep|Bash|TodoWrite|Skill|Agent)`/g;
 const HARD_GATE_PATTERN = /<HARD-GATE>([\s\S]*?)<\/HARD-GATE>/g;
@@ -41,10 +47,29 @@ function parseFrontmatter(content) {
     }
 
     if (currentIndent === 'nested' && line.startsWith('  ')) {
-      const kvMatch = trimmed.match(/^(\w+):\s*(.+)$/);
+      // YAML list item (e.g. "  - value")
+      const listMatch = trimmed.match(/^-\s+(.+)$/);
+      if (listMatch) {
+        // Convert nested block to array if not already
+        if (!Array.isArray(frontmatter[nestedKey])) {
+          frontmatter[nestedKey] = [];
+        }
+        frontmatter[nestedKey].push(listMatch[1].replace(/^["']|["']$/g, ''));
+        continue;
+      }
+
+      const kvMatch = trimmed.match(/^(\w[\w-]*):\s*(.+)$/);
       if (kvMatch) {
-        const value = kvMatch[2].replace(/^["']|["']$/g, '');
-        frontmatter[nestedKey][kvMatch[1]] = value;
+        const rawValue = kvMatch[2].replace(/^["']|["']$/g, '');
+        // Comma-separated list fields → parse as array
+        if (COMMA_LIST_FIELDS.has(kvMatch[1])) {
+          frontmatter[nestedKey][kvMatch[1]] = rawValue
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+        } else {
+          frontmatter[nestedKey][kvMatch[1]] = rawValue;
+        }
       }
       continue;
     }
@@ -55,7 +80,15 @@ function parseFrontmatter(content) {
     const kvMatch = trimmed.match(/^(\w[\w-]*):\s*(.+)$/);
     if (kvMatch) {
       const value = kvMatch[2].replace(/^["']|["']$/g, '');
-      frontmatter[kvMatch[1]] = value;
+      // Comma-separated list fields at top level too (Pro/Business packs)
+      if (COMMA_LIST_FIELDS.has(kvMatch[1])) {
+        frontmatter[kvMatch[1]] = value
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else {
+        frontmatter[kvMatch[1]] = value;
+      }
     }
   }
 
@@ -168,12 +201,22 @@ export function parseSkill(content, filePath = '') {
 
   const metadata = frontmatter.metadata || {};
 
+  // Extract signals — emit/listen arrays from metadata or top-level (Pro/Business packs)
+  const emit = Array.isArray(metadata.emit) ? metadata.emit : Array.isArray(frontmatter.emit) ? frontmatter.emit : [];
+  const listen = Array.isArray(metadata.listen)
+    ? metadata.listen
+    : Array.isArray(frontmatter.listen)
+      ? frontmatter.listen
+      : [];
+  const signals = emit.length > 0 || listen.length > 0 ? { emit, listen } : null;
+
   return {
     name: frontmatter.name || '',
     description: frontmatter.description || '',
     layer: metadata.layer || 'L2',
     model: metadata.model || 'sonnet',
     group: metadata.group || 'general',
+    signals,
     contextFork: frontmatter.context === 'fork',
     agentType: frontmatter.agent || null,
     body,
@@ -223,6 +266,214 @@ export function parsePack(content, filePath = '') {
  * @param {Array} skills - array of skill entries from frontmatter metadata.skills
  * @returns {Array<{name: string, file: string, model: string, description: string}>}
  */
+/**
+ * Parse a workflow template file (templates/*.md)
+ *
+ * Templates have the same frontmatter structure as skills but with additional
+ * template-specific fields: domain, chain, connections[]
+ *
+ * @param {string} content - raw template file content
+ * @param {string} [filePath] - optional file path for error reporting
+ * @returns {ParsedTemplate}
+ */
+export function parseTemplate(content, filePath = '') {
+  const { frontmatter, body } = parseFrontmatter(content);
+
+  // Parse signals — can be nested object { emit: "...", listen: "..." } or flat
+  const signalsRaw = frontmatter.signals || {};
+  const emit =
+    typeof signalsRaw.emit === 'string'
+      ? signalsRaw.emit
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : Array.isArray(signalsRaw.emit)
+        ? signalsRaw.emit
+        : [];
+  const listen =
+    typeof signalsRaw.listen === 'string'
+      ? signalsRaw.listen
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : Array.isArray(signalsRaw.listen)
+        ? signalsRaw.listen
+        : [];
+
+  // Parse connections array — supports both comma-separated string and YAML array
+  let connections = [];
+  if (frontmatter.connections) {
+    if (typeof frontmatter.connections === 'string') {
+      connections = frontmatter.connections
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    } else if (Array.isArray(frontmatter.connections)) {
+      connections = frontmatter.connections;
+    }
+  }
+
+  return {
+    name: frontmatter.name || '',
+    pack: frontmatter.pack || '',
+    version: frontmatter.version || '1.0.0',
+    description: frontmatter.description || '',
+    domain: frontmatter.domain || '',
+    chain: frontmatter.chain || 'standard',
+    signals: { emit, listen },
+    connections,
+    body,
+    crossRefs: extractCrossRefs(body),
+    sections: extractSections(body),
+    filePath,
+    frontmatter,
+  };
+}
+
+/**
+ * Parse organization config from .rune/org/org.md
+ * Extracts teams, roles, policies, approval flows, and governance level.
+ */
+export function parseOrgConfig(content, filePath = '') {
+  const { frontmatter, body } = parseFrontmatter(content);
+
+  const teams = parseMarkdownTable(body, 'Teams');
+  const roles = parseMarkdownTable(body, 'Roles');
+  const policies = parseOrgPolicies(body);
+  const approvalFlows = parseApprovalFlows(body);
+  const governanceLevel = parseGovernanceLevel(body);
+
+  return {
+    name: frontmatter.name || '',
+    description: frontmatter.description || '',
+    version: frontmatter.version || '1.0.0',
+    tier: frontmatter.tier || 'business',
+    teams,
+    roles,
+    policies,
+    approvalFlows,
+    governanceLevel,
+    body,
+    filePath,
+    frontmatter,
+  };
+}
+
+/**
+ * Parse a Markdown table under a ## heading into array of objects.
+ * Handles | col1 | col2 | format with header row + separator row + data rows.
+ */
+function parseMarkdownTable(body, sectionName) {
+  // Find the section
+  const sectionPattern = new RegExp(`## ${sectionName}\\s*\\n([\\s\\S]*?)(?=\\n## |$)`);
+  const sectionMatch = body.match(sectionPattern);
+  if (!sectionMatch) return [];
+
+  const sectionContent = sectionMatch[1];
+  const lines = sectionContent.split('\n').filter((l) => l.trim().startsWith('|'));
+  if (lines.length < 3) return []; // need header + separator + at least 1 row
+
+  const parseRow = (line) =>
+    line
+      .split('|')
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+
+  const headers = parseRow(lines[0]).map((h) => h.toLowerCase().replace(/\s+/g, '_'));
+  // Skip separator row (lines[1])
+  const rows = [];
+  for (let i = 2; i < lines.length; i++) {
+    const cells = parseRow(lines[i]);
+    if (cells.length === 0) continue;
+    const row = {};
+    headers.forEach((h, idx) => {
+      row[h] = cells[idx] || '';
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+/**
+ * Parse ### subsections under ## Policies into a map of policy name → rules array.
+ */
+function parseOrgPolicies(body) {
+  const policiesPattern = /## Policies\s*\n([\s\S]*?)(?=\n## [^#]|$)/;
+  const policiesMatch = body.match(policiesPattern);
+  if (!policiesMatch) return {};
+
+  // Prepend \n so first ### subsection is also captured by split
+  const policiesContent = `\n${policiesMatch[1].trimStart()}`;
+  const policies = {};
+  const subSections = policiesContent.split(/\n### /);
+
+  for (let i = 1; i < subSections.length; i++) {
+    const lines = subSections[i].split('\n');
+    const name = lines[0].trim().toLowerCase().replace(/\s+/g, '_');
+    const rules = lines
+      .slice(1)
+      .filter((l) => l.trim().startsWith('- **'))
+      .map((l) => {
+        const match = l.match(/- \*\*(.+?)\*\*:\s*(.+)/);
+        if (!match) return null;
+        return {
+          key: match[1].trim().toLowerCase().replace(/\s+/g, '_'),
+          value: match[2].trim(),
+        };
+      })
+      .filter(Boolean);
+    policies[name] = rules;
+  }
+  return policies;
+}
+
+/**
+ * Parse ### subsections under ## Approval Flows into named flow strings.
+ */
+function parseApprovalFlows(body) {
+  const flowsPattern = /## Approval Flows\s*\n([\s\S]*?)(?=\n## [^#]|$)/;
+  const flowsMatch = body.match(flowsPattern);
+  if (!flowsMatch) return {};
+
+  // Prepend \n so first ### subsection is also captured by split
+  const flowsContent = `\n${flowsMatch[1].trimStart()}`;
+  const flows = {};
+  const subSections = flowsContent.split(/\n### /);
+
+  for (let i = 1; i < subSections.length; i++) {
+    const lines = subSections[i].split('\n');
+    const name = lines[0].trim().toLowerCase().replace(/\s+/g, '_');
+    // Extract content between ``` blocks
+    const codeMatch = subSections[i].match(/```\n([\s\S]*?)```/);
+    if (codeMatch) {
+      flows[name] = codeMatch[1].trim();
+    }
+  }
+  return flows;
+}
+
+/**
+ * Parse ## Governance Level section for governance mode and settings.
+ */
+function parseGovernanceLevel(body) {
+  const govPattern = /## Governance Level\s*\n([\s\S]*?)(?=\n## |$)/;
+  const govMatch = body.match(govPattern);
+  if (!govMatch) return { level: 'unknown', settings: [] };
+
+  const content = govMatch[1];
+  // Extract bold level: **Minimal**, **Moderate**, **Maximum**
+  const levelMatch = content.match(/\*\*(\w+)\*\*/);
+  const level = levelMatch ? levelMatch[1].toLowerCase() : 'unknown';
+
+  // Extract bullet settings
+  const settings = content
+    .split('\n')
+    .filter((l) => l.trim().startsWith('- '))
+    .map((l) => l.trim().replace(/^- /, ''));
+
+  return { level, settings };
+}
+
 function parseSkillManifest(skills) {
   if (!Array.isArray(skills)) return [];
 

@@ -3,11 +3,12 @@ name: session-bridge
 description: Universal context persistence across sessions. Auto-saves decisions, conventions, and progress to .rune/ files. Loads state at session start. Use when any skill makes architectural decisions or establishes patterns that must survive session boundaries.
 metadata:
   author: runedev
-  version: "0.2.0"
+  version: "0.5.0"
   layer: L3
   model: haiku
   group: state
   tools: "Read, Write, Edit, Glob, Grep"
+  listen: phase.complete
 ---
 
 # session-bridge
@@ -42,7 +43,9 @@ Solve the #1 developer complaint: context loss across sessions. Session-bridge a
 ├── decisions.md      — Architectural decisions log
 ├── conventions.md    — Established patterns & style
 ├── progress.md       — Task progress tracker
-└── session-log.md    — Brief log of each session
+├── session-log.md    — Brief log of each session
+├── instincts.md      — Learned project-specific patterns (trigger→action)
+└── cumulative-notes.md — Living project understanding (profile, themes, relationships)
 ```
 
 ## Execution
@@ -143,6 +146,111 @@ Use `Edit` to append a one-line entry to `.rune/session-log.md`:
 [YYYY-MM-DD HH:MM] — [brief description of session accomplishments]
 ```
 
+#### Step 5.5 — Autonomous Loop Notes (when inside team or headless)
+
+When session-bridge is invoked by `cook` running inside `team` or in autonomous mode (`claude -p`), persist iteration state to `.rune/task-notes.md`:
+
+```markdown
+# Task Notes: [task name]
+## What Worked (with evidence)
+- [approach]: [outcome, test output, or file path as proof]
+
+## What Failed
+- [approach]: [why it failed, error message]
+
+## What's Left
+- [ ] [remaining task with specific next step]
+
+## Key Context for Next Iteration
+- [critical info that would be lost on context reset]
+```
+
+**Why**: In autonomous loops, each `claude -p` invocation starts with zero context. Without this file, the next iteration repeats failed approaches and loses progress. The notes bridge the gap between independent invocations.
+
+**Rules**: Agent reads `.rune/task-notes.md` at start (Step 1 of Load Mode), updates at end. Keep concise — max 50 lines. Prune completed items.
+
+#### Step 5.7 — Instinct Extraction (Project-Scoped Learning)
+
+Extract atomic "instincts" — learned trigger→action patterns — from this session and persist to `.rune/instincts.md`. Instincts are project-scoped by default to prevent cross-project contamination.
+
+**Instinct format:**
+
+```markdown
+## [YYYY-MM-DD] Instinct: <short name>
+
+**Trigger:** <when this pattern applies — specific condition>
+**Action:** <what to do — specific behavior>
+**Confidence:** <0.3–0.9>
+**Evidence:** <what happened that taught this — file, error, outcome>
+```
+
+**Extraction rules:**
+
+| Signal | Example | Confidence |
+|--------|---------|------------|
+| Repeated manual correction by user | "Don't use X, use Y here" (2+ times) | 0.7–0.9 |
+| Failed approach → successful pivot | Tried approach A, failed, approach B worked | 0.5–0.7 |
+| Project-specific convention discovered | "This codebase uses X pattern for Y" | 0.4–0.6 |
+| One-off preference (may not generalize) | User chose a specific library once | 0.3–0.4 |
+
+**Promotion to global**: When the same instinct (matching trigger+action) appears in `.rune/instincts.md` across 2+ projects at confidence ≥0.8, promote it to Neural Memory via Step 6 with tag `[cross-project, instinct]`. Until then, it stays project-local.
+
+**Pruning**: At session start (Load Mode Step 1), review instincts older than 30 days with confidence <0.5 — remove them. Instincts that conflict with current conventions should be removed immediately.
+
+**Max instincts**: Keep `.rune/instincts.md` under 20 entries. When full, evict the lowest-confidence entry.
+
+#### Step 5.9 — Cumulative Project Notes (Structured Memory)
+
+Maintain a running **cumulative notes** file at `.rune/cumulative-notes.md` that evolves across sessions. Unlike `progress.md` (which tracks tasks) or `decisions.md` (which logs choices), cumulative notes capture the **living understanding** of the project — patterns learned, relationships discovered, recurring themes, and open threads.
+
+**Format** — use these fixed sections (add content, never remove prior entries):
+
+```markdown
+# Cumulative Project Notes
+
+## Project Profile
+- [Core purpose of the project — 1 sentence]
+- [Primary users/audience]
+- [Key technical constraints — e.g., "must run offline", "latency-critical", "multi-tenant"]
+
+## Architecture Map
+- [Key modules and their responsibilities — discovered over sessions]
+- [Critical data flows — e.g., "user input → validation → API → DB → cache invalidation"]
+- [Integration points — external APIs, services, databases]
+
+## Recurring Themes
+- [Patterns that keep coming up across sessions — e.g., "auth edge cases", "migration complexity"]
+- [Common failure modes — what breaks and why]
+- [Technical debt hotspots — areas that repeatedly cause issues]
+
+## Active Topics
+- [What's currently being worked on — updated each session]
+- [Open questions that haven't been resolved yet]
+- [Experiments in progress]
+
+## Relationship Map
+- [Key files and their dependencies — "changing X requires updating Y"]
+- [People and their areas — "Alice owns auth, Bob owns payments"]
+- [External service dependencies — "Stripe webhook → order.complete handler"]
+
+## Follow-Up Items
+- [ ] [Things noted but not yet addressed — carry forward until done]
+- [ ] [Ideas that came up during work but were out of scope]
+
+## Attention Points
+- [Things the next session should be aware of — fragile areas, pending PRs, deadlines]
+- [Temporary workarounds that need proper fixes]
+```
+
+**Update rules:**
+- **Create** the file on first session-bridge save if it doesn't exist
+- **Append** to existing sections — never overwrite prior entries (they represent accumulated knowledge)
+- **Prune** entries older than 60 days in Recurring Themes and Relationship Map — these may be stale
+- **Move** completed Follow-Up Items to a `## Resolved` section at the bottom (keep last 10)
+- **Keep under 200 lines** — if approaching limit, summarize older entries in each section
+
+**Why**: Individual state files (decisions.md, progress.md) capture discrete events. Cumulative notes capture the **emergent understanding** that develops over many sessions — the kind of knowledge that's lost when context resets. This is the project's "institutional memory."
+
 #### Step 6 — Cross-Project Knowledge Extraction (Neural Memory Bridge)
 
 Before committing, extract generalizable patterns from this session for cross-project reuse:
@@ -209,6 +317,7 @@ Read: .rune/decisions.md
 Read: .rune/conventions.md
 Read: .rune/progress.md
 Read: .rune/session-log.md
+Read: .rune/cumulative-notes.md
 ```
 
 #### Step 3 — Summarize
@@ -220,6 +329,7 @@ Present the loaded context to the agent in a structured summary:
 > - Key decisions: [last 3 entries from decisions.md]
 > - Active conventions: [count from conventions.md]
 > - Current progress: [in-progress and blocked items from progress.md]
+> - Project understanding: [Active Topics + Attention Points from cumulative-notes.md]
 > - Next task: [first item under "Next Session Should" from progress.md]
 
 #### Step 4 — Resume

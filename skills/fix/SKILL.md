@@ -3,11 +3,13 @@ name: fix
 description: Apply code changes and fixes. Writes implementation code, applies bug fixes, and verifies changes with tests. Core action hub in the development mesh.
 metadata:
   author: runedev
-  version: "0.4.0"
+  version: "0.8.0"
   layer: L2
   model: sonnet
   group: development
   tools: "Read, Write, Edit, Bash, Glob, Grep"
+  emit: code.changed
+  listen: bug.diagnosed, review.issues, preflight.blocked, security.blocked
 ---
 
 # fix
@@ -66,6 +68,29 @@ Read and fully understand the fix request before touching any file.
 - If the request is ambiguous or root cause is unclear → call `rune:debug` before proceeding
 - Note the scope: single function, single file, or multi-file change
 
+### Step 1b: Recovery Policy Matrix
+
+Before locating code, classify the incoming error/task into a recovery category to determine the right fix strategy. This prevents wasting effort on the wrong approach.
+
+| Error Type | Recovery Action | Strategy |
+|------------|----------------|----------|
+| `INPUT_REQUIRED` — missing user input, ambiguous spec | **PROMPT_USER** | Return NEEDS_CONTEXT with specific questions. Do NOT guess. |
+| `INPUT_INVALID` — wrong format, type mismatch, encoding | **AUTO_FIX** | Fix at validation layer. Add schema validation (Zod/Pydantic) if missing. |
+| `TIMEOUT` — operation exceeded time limit | **RETRY** with adjustment | Increase timeout, add retry with exponential backoff, or chunk the operation. |
+| `POLICY_BLOCKED` — security gate, lint rule, contract violation | **ABORT** | Do NOT work around the policy. Report to caller with the specific rule that blocked. |
+| `PERMISSION_DENIED` — auth failure, file access, API scope | **PROMPT_USER** | Cannot fix permissions programmatically. Report exact permission needed. |
+| `DEPENDENCY_ERROR` — missing package, version conflict, broken dep | **AUTO_FIX** | Install missing dep, resolve version conflict, or suggest alternative package. |
+| `LOGIC_ERROR` — wrong output, incorrect calculation, bad algorithm | **INVESTIGATE** | Do NOT auto-fix. Call `rune:debug` — logic errors need root cause analysis. |
+| `ENVIRONMENT_ERROR` — wrong Node/Python version, missing system dep | **PROMPT_USER** | Report exact version/tool needed. Agent cannot change system environment. |
+
+**Decision flow**:
+1. Read the incoming diagnosis/error
+2. Classify into one of the 8 error types above
+3. Apply the recovery action — this determines whether to proceed (AUTO_FIX, RETRY), ask (PROMPT_USER), stop (ABORT), or re-diagnose (INVESTIGATE)
+4. Announce: "Recovery policy: {error_type} → {action}"
+
+**Why**: Without a recovery matrix, fix attempts the same strategy (read → change → test) for every error type. A POLICY_BLOCKED error doesn't need code reading — it needs the policy reported. An INPUT_REQUIRED error doesn't need debugging — it needs a question asked. Matching strategy to error type eliminates wasted cycles.
+
 ### Step 2: Locate
 
 Find the exact files and lines to change.
@@ -96,6 +121,31 @@ Confirm the change works and nothing is broken.
   - Do NOT change test files to make tests pass — fix the implementation code
 - If project has a type-check command, run it via `Bash`
 - If project has a lint command, run it via `Bash`
+
+### Step 4.5: Quality Decay Check (Self-Regulation)
+
+When fix is called repeatedly (e.g., by cook Phase 4, or iterative fix loops), track a **WTF-likelihood score** — the probability that continued fixing is making things worse.
+
+**Compute every 3 fix attempts** (or when called 5+ times in a single cook session):
+
+| Signal | Score Adjustment |
+|--------|-----------------|
+| A fix was reverted (any test that passed now fails) | +15% |
+| Fix touched >3 files (blast radius expanding) | +5% per extra file beyond 3 |
+| 15+ fixes already applied in this session | +1% per fix beyond 15 |
+| All remaining issues are LOW severity | +10% |
+| Fix touched files outside the original diagnosis scope | +20% |
+| Consecutive fixes without running tests between them | +10% |
+
+**Thresholds:**
+- **>20% WTF-likelihood**: STOP fixing. Report current state to cook/user with: "Quality decay detected — continued fixes risk introducing more bugs than they resolve. {N} fixes applied, {score}% risk. Recommend: commit current progress, re-assess remaining issues."
+- **Hard cap: 30 fixes per session** — regardless of score. After 30, STOP and report.
+
+**Reset conditions:** WTF-likelihood resets to 0% when:
+- User explicitly says "continue fixing"
+- A full test suite run shows zero regressions
+- Scope is narrowed to a single file
+
 
 ### Step 5: Post-Fix Hardening (Defense-in-Depth)
 
@@ -178,7 +228,7 @@ If fix requires touching >3 files not in the diagnosis → re-diagnose. You're p
 ```
 ## Fix Report
 - **Task**: [what was fixed/implemented]
-- **Status**: complete | partial | blocked
+- **Status**: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 
 ### Changes
 - `path/to/file.ts` — [description of change]
@@ -189,9 +239,37 @@ If fix requires touching >3 files not in the diagnosis → re-diagnose. You're p
 - Types: PASS | FAIL
 - Tests: PASS | FAIL ([n] passed, [m] failed)
 
+### Concerns (if DONE_WITH_CONCERNS)
+- [concern]: [impact assessment] — [suggested remediation]
+
+### Context Needed (if NEEDS_CONTEXT)
+- [what is unknown]: [why it blocks] — [two most likely answers]
+
+### Blocker (if BLOCKED)
+- [specific blocker]: [what was attempted]
+
 ### Notes
 - [any caveats or follow-up needed]
 ```
+
+### Status Protocol (Subagent Contract)
+
+Fix returns one of four statuses to its caller (cook, debug, review, surgeon). The caller uses this to route next actions.
+
+| Status | When | Example |
+|--------|------|---------|
+| `DONE` | Fix applied, tests pass, no issues | Clean bug fix, all green |
+| `DONE_WITH_CONCERNS` | Fix works but has side effects or caveats worth noting | "Tests pass but performance regressed 15% — consider optimizing in follow-up" |
+| `NEEDS_CONTEXT` | Cannot apply fix without clarification — ambiguous spec or missing info | "Two valid interpretations of the expected behavior — need user input" |
+| `BLOCKED` | Hard blocker — exhausted fix attempts, broken dependency, fundamental incompatibility | "3 fix attempts failed — triggering debug escalation" |
+
+## Returns
+
+| Artifact | Format | Location |
+|----------|--------|----------|
+| Code changes | Source files | Per debug report / plan file paths |
+| Fix Report | Markdown (inline) | Emitted to calling skill (cook, debug, review, surgeon) |
+| Verification output | Inline (Fix Report) | Lint + types + test results |
 
 ## Sharp Edges
 
@@ -207,6 +285,9 @@ Known failure modes for this skill. Check these before declaring done.
 | Fixing at crash site without tracing data origin | HIGH | Defense-in-depth: trace where bad data ORIGINATES, add validation at every layer it passes through |
 | Single-point validation (fix one spot, hope it holds) | MEDIUM | Step 5: add entry + business logic + environment + debug layers for data-flow bugs |
 | Removing debug instrumentation before fix is verified | MEDIUM | Step 5b: preserve `#region agent-debug` markers until all tests pass — premature cleanup erases failure history |
+| Runaway fix loop — 20+ fixes without checking quality decay | HIGH | Step 4.5: WTF-likelihood self-regulation. >20% risk = STOP. Hard cap 30 fixes/session. Each fix adds risk — diminishing returns after ~15 |
+| Each fix creates a new bug elsewhere — whack-a-mole | CRITICAL | Tight coupling signal. STOP fixing → escalate to debug with note "each fix creates new failure — suspect structural issue". Debug will route to plan for redesign |
+| Applying same fix strategy to every error type | MEDIUM | Step 1b Recovery Policy Matrix: classify error type FIRST — POLICY_BLOCKED needs reporting not fixing, INPUT_REQUIRED needs questions not code |
 
 ## Done When
 
@@ -215,8 +296,13 @@ Known failure modes for this skill. Check these before declaring done.
 - Tests pass for the fixed functionality (actual output shown)
 - Lint and type check pass
 - hallucination-guard verified any new imports
-- Fix Report emitted with changed files and verification results
+- Fix Report emitted with 4-state status, changed files, and verification results
+- If `DONE_WITH_CONCERNS`: concerns listed with impact + remediation
+- If `NEEDS_CONTEXT`: specific questions stated with two likely answers
+- If `BLOCKED`: blocker + all attempted approaches documented
 
 ## Cost Profile
 
 ~2000-5000 tokens input, ~1000-3000 tokens output. Sonnet for code writing quality. Most active skill during implementation.
+
+**Scope guardrail**: Do not refactor unrelated code or create new features beyond the diagnosed fix target unless explicitly delegated by the parent agent.

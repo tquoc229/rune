@@ -8,6 +8,8 @@ metadata:
   model: sonnet
   group: monitoring
   tools: "Read, Bash, Glob, Grep"
+  emit: incident.detected
+  listen: deploy.complete
 ---
 
 # watchdog
